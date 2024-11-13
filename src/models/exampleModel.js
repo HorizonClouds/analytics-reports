@@ -2,6 +2,20 @@
 
 import mongoose from 'mongoose';
 
+const exampleSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Name is required'], // Validation: Name is required
+    minlength: [3, 'Name must be at least 3 characters long'], // Validation: Minimum length
+    maxlength: [50, 'Name must be at most 50 characters long'], // Validation: Maximum length
+  },
+  value: {
+    type: Number,
+    required: [true, 'Value is required'], // Validation: Value is required
+    min: [0, 'Value must be a positive number'], // Validation: Minimum value
+  },
+});
+
 // ItineraryAnalytic schema
 const itineraryAnalyticSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -46,6 +60,7 @@ const messageNotificationSchema = new mongoose.Schema({
   notificationStatus: { type: String, enum: ['SEEN', 'NOT SEEN'], required: true },
 });
 
+const ExampleModel = mongoose.model('Example', exampleSchema);
 const ItineraryAnalytic = mongoose.model('ItineraryAnalytic', itineraryAnalyticSchema);
 const PublicationAnalytic = mongoose.model('PublicationAnalytic', publicationAnalyticSchema);
 const ItineraryReport = mongoose.model('ItineraryReport', itineraryReportSchema);
@@ -53,6 +68,7 @@ const PublicationReport = mongoose.model('PublicationReport', publicationReportS
 const MessageNotification = mongoose.model('MessageNotification', messageNotificationSchema);
 
 export default {
+  ExampleModel,
   ItineraryAnalytic,
   PublicationAnalytic,
   ItineraryReport,
