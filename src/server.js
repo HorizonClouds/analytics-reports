@@ -21,7 +21,7 @@ app.use(standardizedResponse); // Use custom response middleware
 
 // Routes
 app.use('/api', apiRouter); // Use API routes
-app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api', notificationRoutes);
 
 app.get('/', (req, res) => {
   // Redirect to API documentation

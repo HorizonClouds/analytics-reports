@@ -33,7 +33,7 @@ export const validateExample = [
       next();
     } catch (error) {
       res.sendError(new ValidationError('An error occurred while validating', [error]));
-      next();
+      return;
     }
   },
 ];
