@@ -15,5 +15,4 @@ router.put(
 );
 router.delete('/v1/examples/:id', exampleController.deleteExample);
 
-
 export default router;

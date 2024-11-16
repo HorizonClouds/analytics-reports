@@ -72,7 +72,7 @@ export const updateItineraryAnalytic = async (req, res, next) => {
   
 export const deleteItineraryAnalytic = async (req, res, next) => {
     try {
-      const { id } = req.params; // ID del análisis a eliminar
+      const { id } = req.params;
       await notificacionService.deleteItineraryAnalytic(id);
       res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
     } catch (error) {

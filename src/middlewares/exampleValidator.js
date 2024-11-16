@@ -21,7 +21,9 @@ export const validateExample = [
     .isNumeric()
     .withMessage('Value must be a number')
     .isFloat({ min: 0 })
-    .withMessage('Value must be a positive number'),
+    .withMessage('Value must be a positive number')
+    
+    ,
 
   // Middleware to handle validation errors
   (req, res, next) => {
