@@ -23,7 +23,9 @@ const port = process.env.BACKEND_PORT || 3000; // Define port
 
 // Middlewares
 app.use(express.json()); // Parse JSON bodies
+
 // Middleware to handle JSON parsing errors
+
 app.use((err, req, res, next) => {
   if (err) next(new BadJsonError('Invalid JSON', err.message));
   next();
