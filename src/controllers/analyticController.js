@@ -19,7 +19,7 @@ export const getAnalyticById = async (req, res, next) => {
     if (!analytic) throw new NotFoundError('Analytic not found');
     res.sendSuccess(removeMongoFields(analytic));
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
 export const createAnalytic = async (req, res, next) => {
@@ -34,18 +34,7 @@ export const createAnalytic = async (req, res, next) => {
         201 // Código de estado HTTP para creación exitosa
       );
     } catch (error) {
-      // Manejo de errores de validación
-      if (error.name === 'ValidationError') {
-        res.sendError(new ValidationError('Validation failed', error.errors));
-      } else {
-        // Manejo de otros errores generales
-        res.sendError(
-          new ValidationError(
-            'An error occurred while creating the analytic',
-            [{ msg: error.message }]
-          )
-        );
-      }
+      next(error);
     }
 };
 
@@ -55,7 +44,7 @@ export const getAnalyticByUserId = async (req, res) => {
     const analyticByUser = await analyticService.getAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
     res.sendSuccess(analyticByUser); // Devuelve la analítica encontrada
   } catch (error) {
-    res.sendError(error); // Devuelve el error en caso de fallo
+    next(error);
   }
 };
  
@@ -64,7 +53,7 @@ export const getAllAnalytics = async (req, res, next) => {
       const analytics = await analyticService.getAllAnalytics();
       res.sendSuccess(removeMongoFields(analytics));
   } catch (error) {
-      res.sendError(error);
+    next(error);
   }
 };
 

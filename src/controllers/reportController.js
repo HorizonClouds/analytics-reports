@@ -19,7 +19,7 @@ export const getReportById = async (req, res, next) => {
     if (!report) throw new NotFoundError('Report not found');
     res.sendSuccess(removeMongoFields(report));
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
 
@@ -35,18 +35,7 @@ export const createReport = async (req, res, next) => {
         201 // Código de estado HTTP para creación exitosa
       );
     } catch (error) {
-      // Manejo de errores de validación
-      if (error.name === 'ValidationError') {
-        res.sendError(new ValidationError('Validation failed', error.errors));
-      } else {
-        // Manejo de otros errores generales
-        res.sendError(
-          new ValidationError(
-            'An error occurred while creating the report',
-            [{ msg: error.message }]
-          )
-        );
-      }
+      next(error);
     }
 };
 
@@ -56,6 +45,6 @@ export const getReportByUserId = async (req, res) => {
     const reportByUser = await reportService.getReportByUserId(userId); // Llama al servicio para buscar la analítica
     res.sendSuccess(reportByUser); // Devuelve la analítica encontrada
   } catch (error) {
-    res.sendError(error); // Devuelve el error en caso de fallo
+    next(error);
   }
 };
