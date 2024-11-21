@@ -58,29 +58,26 @@ export const getItineraryAnalytics = async (filters = {}) => {
   }
 };
 
-// Actualizar un análisis de itinerarios por ID
-export const updateItineraryAnalytic = async (id, updateData) => {
+export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
-    return await Models.ItineraryAnalytic.findByIdAndUpdate(id, updateData, { new: true });
-  } catch (error) {
-    console.error('Error updating itinerary analytic:', error);
-    throw new BadRequestError('Error updating itinerary analytic', error);
-  }
-};
+    let analytic = await Models.UserAnalytic.findById(id);
 
-// Eliminar un análisis de itinerarios por ID
-export const deleteItineraryAnalytic = async (id) => {
-  try {
-    const document = await Models.ItineraryAnalytic.findById(id);
-    if (!document) {
-      throw new Error(`Document with id ${id} not found in the database.`);
+    if (analytic) {
+      return analytic;
     }
 
-    // Procede con la eliminación
-    return await Models.ItineraryAnalytic.findByIdAndDelete(id);
+    //este analytic data lo pasamos del servicio de manuel, atraves de axios.get 
+    //para el usuario pasado.
+    const newAnalytic = new Models.UserAnalytic({
+      _id: id, // Usa el ID proporcionado para el nuevo análisis
+      ...analyticData, // Usa los datos adicionales que se pasan
+    });
+
+    analytic = await newAnalytic.save(); // Guarda el nuevo análisis en la base de datos
+    return analytic;
   } catch (error) {
-    console.error('Error deleting itinerary analytic:', error);
-    throw new BadRequestError('Error deleting itinerary analytic', error);
+    console.error('Error in getOrCreateAnalyticById:', error);
+    throw new BadRequestError('Error fetching or creating analytic', error);
   }
 };
 
@@ -90,7 +87,6 @@ export default {
   createAnalytic,
   getAnalyticByUserId,
   getItineraryAnalytics,
-  updateItineraryAnalytic,
-  deleteItineraryAnalytic
+  getOrCreateAnalyticById
 };
 

@@ -67,23 +67,42 @@ export const getItineraryAnalytics = async (req, res, next) => {
     }
 };
   
-export const updateItineraryAnalytic = async (req, res, next) => {
-    try {
-      const { id } = req.params; // ID del análisis a actualizar
-      const updateData = req.body;
-      const updatedAnalytic = await analyticService.updateItineraryAnalytic(id, updateData);
-      res.sendSuccess(updatedAnalytic);
-    } catch (error) {
-      next(error);
-    }
+export const getOrCreateAnalytic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const analyticData = req.body;
+
+    // Llama al servicio para buscar o crear el análisis
+    const analytic = await analyticService.getOrCreateAnalyticById(id, analyticData);
+    res.status(200).json({
+      message: 'Analytic fetched or created successfully',
+      data: analytic,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: 'Error fetching or creating analytic',
+      error: error.message,
+    });
+  }
 };
-  
-export const deleteItineraryAnalytic = async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      await analyticService.deleteItineraryAnalytic(id);
-      res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
-    } catch (error) {
-      next(error);
-    }
-};
+
+//export const updateItineraryAnalytic = async (req, res, next) => {
+//  try {
+//    const { id } = req.params; // ID del análisis a actualizar
+//    const updateData = req.body;
+//    const updatedAnalytic = await analyticService.updateItineraryAnalytic(id, updateData);
+//    res.sendSuccess(updatedAnalytic);
+//  } catch (error) {
+//    next(error);
+//  }
+//};
+
+//export const deleteItineraryAnalytic = async (req, res, next) => {
+//  try {
+//    const { id } = req.params;
+//    await analyticService.deleteItineraryAnalytic(id);
+//    res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
+//  } catch (error) {
+//    next(error);
+//  }
+//};
