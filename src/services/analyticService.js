@@ -1,22 +1,49 @@
-import Models from '../models/notificationModel.js'; // Importa el objeto de modelos
+import Models from '../models/analyticModel.js'; // Importa el objeto de modelos
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
-//Obtener todas las notificaciones
-export const getAllNotifications = async () => {
+
+export const getAnalyticById = async (id) => {
   try {
-    return await Models.ItineraryAnalytic.find({});
+    const analytic = await Models.UserAnalytic.findById(id);
+    if (!analytic) {
+      throw new NotFoundError('Analytic not found');
+    }
+    return analytic;
   } catch (error) {
-    throw new BadRequestError('Error fetching notifications', error);
+    throw new NotFoundError('Error fetching analytic by ID', error);
+  }
+};
+
+
+export const getAnalyticByUserId = async (userId) => {
+  try {
+    const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
+    if (!analyticByUser) {
+      throw new NotFoundError('Analytic not found for the specified userId');
+    }
+    return analyticByUser;
+  } catch (error) {
+    throw new NotFoundError('Error fetching analytic by userId', error);
+  }
+};
+
+
+//Obtener todas las notificaciones
+export const getAllAnalytics = async () => {
+  try {
+    return await Models.UserAnalytic.find({});
+  } catch (error) {
+    throw new BadRequestError('Error fetching analytics', error);
   }
 };
 
 //Crear un análisis de itinerarios
-export const createItineraryAnalytic = async (analyticData) => {
+export const createAnalytic = async (analyticData) => {
   try {
-    const newAnalytic = new Models.ItineraryAnalytic(analyticData);
+    const newAnalytic = new Models.UserAnalytic(analyticData);
     return await newAnalytic.save();
   } catch (error) {
-    console.error('Error creating itinerary analytic:', error);
-    throw new BadRequestError('Error creating itinerary analytic', error);
+    console.error('Error creating analytic:', error);
+    throw new BadRequestError('Error creating analytic', error);
   }
 };
 
@@ -58,8 +85,10 @@ export const deleteItineraryAnalytic = async (id) => {
 };
 
 export default {
-  getAllNotifications,
-  createItineraryAnalytic,
+  getAnalyticById,
+  getAllAnalytics,
+  createAnalytic,
+  getAnalyticByUserId,
   getItineraryAnalytics,
   updateItineraryAnalytic,
   deleteItineraryAnalytic

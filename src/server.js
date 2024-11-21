@@ -6,6 +6,10 @@ import apiRouter from './routes/exampleRoute.js'; // Import API routes
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 import standardResponseMiddleware from './middlewares/standardResponseMiddleware.js'; // Import custom response middleware
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import './models/analyticModel.js'; // Importa notificationModels.js para registrar modelos
+import analyticRoute from './routes/analyticRoute.js';  // Asegúrate de que esté correctamente importado
+import './models/reportModel.js'; // Importa notificationModels.js para registrar modelos
+import reportRoute from './routes/reportRoute.js';  // Asegúrate de que esté correctamente importado
 import './models/notificationModel.js'; // Importa notificationModels.js para registrar modelos
 import notificationRoutes from './routes/notificationRoute.js';  // Asegúrate de que esté correctamente importado
 import errorHandler from './middlewares/errorHandler.js';
@@ -27,7 +31,9 @@ app.use((err, req, res, next) => {
 app.use(standardResponseMiddleware); 
 // Routes
 app.use('/api', apiRouter); // Use API routes
-app.use('/api', notificationRoutes);
+app.use('/api', analyticRoute);
+app.use('/api', reportRoute);
+
 
 app.get('/', (req, res) => {
   // Redirect to API documentation
