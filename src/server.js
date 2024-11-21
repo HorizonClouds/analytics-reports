@@ -1,5 +1,4 @@
 // server.js
-
 import express from 'express'; // Import Express framework
 import { swaggerSetup } from './swagger.js'; // Import Swagger setup
 import apiRouter from './routes/exampleRoute.js'; // Import API routes
@@ -10,8 +9,6 @@ import './models/analyticModel.js'; // Importa notificationModels.js para regist
 import analyticRoute from './routes/analyticRoute.js';  // Asegúrate de que esté correctamente importado
 import './models/reportModel.js'; // Importa notificationModels.js para registrar modelos
 import reportRoute from './routes/reportRoute.js';  // Asegúrate de que esté correctamente importado
-import './models/notificationModel.js'; // Importa notificationModels.js para registrar modelos
-import notificationRoutes from './routes/notificationRoute.js';  // Asegúrate de que esté correctamente importado
 import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
