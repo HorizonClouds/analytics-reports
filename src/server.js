@@ -1,16 +1,20 @@
 // server.js
 
 import express from 'express'; // Import Express framework
-import mongoose from 'mongoose'; // Import Mongoose for MongoDB
 import { swaggerSetup } from './swagger.js'; // Import Swagger setup
 import apiRouter from './routes/exampleRoute.js'; // Import API routes
 import dotenv from 'dotenv'; // Import dotenv for environment variables
-import standardizedResponse from './middlewares/standardResponse.js'; // Import custom response middleware
+import standardResponseMiddleware from './middlewares/standardResponseMiddleware.js'; // Import custom response middleware
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import './models/analyticModel.js'; // Importa notificationModels.js para registrar modelos
 import analyticRoute from './routes/analyticRoute.js';  // Asegúrate de que esté correctamente importado
 import './models/reportModel.js'; // Importa notificationModels.js para registrar modelos
 import reportRoute from './routes/reportRoute.js';  // Asegúrate de que esté correctamente importado
+import './models/notificationModel.js'; // Importa notificationModels.js para registrar modelos
+import notificationRoutes from './routes/notificationRoute.js';  // Asegúrate de que esté correctamente importado
+import errorHandler from './middlewares/errorHandler.js';
+import { BadJsonError } from './utils/customErrors.js';
+import connectDB from './db/connection.js';
 
 dotenv.config(); // Load environment variables
 
@@ -19,8 +23,12 @@ const port = process.env.BACKEND_PORT || 3000; // Define port
 
 // Middlewares
 app.use(express.json()); // Parse JSON bodies
-app.use(standardizedResponse); // Use custom response middleware
-
+// Middleware to handle JSON parsing errors
+app.use((err, req, res, next) => {
+  if (err) next(new BadJsonError('Invalid JSON', err.message));
+  next();
+});
+app.use(standardResponseMiddleware); 
 // Routes
 app.use('/api', apiRouter); // Use API routes
 app.use('/api', analyticRoute);
@@ -32,6 +40,7 @@ app.get('/', (req, res) => {
   res.redirect('/api-docs');
 });
 
+app.use(errorHandler);
 // Swagger configuration
 swaggerSetup(app);
 
@@ -45,21 +54,15 @@ if (process.env.NODE_ENV === 'test') {
   console.log(mongoURI);
 }
 
-mongoose
-  .connect(mongoURI)
+connectDB()
   .then(() => {
-    console.log('Connected to MongoDB');
+    app.listen(port, () => {
+      console.log(`Server is running on http://localhost:${port}`);
+      console.log(`API documentation is available at http://localhost:${port}/api-docs`);
+    });
   })
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error.message);
   });
-
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-  console.log(
-    `API documentation is available at http://localhost:${port}/api-docs`
-  );
-});
 
 export default app; // Export the Express application

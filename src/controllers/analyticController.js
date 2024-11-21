@@ -74,7 +74,7 @@ export const getItineraryAnalytics = async (req, res, next) => {
       const analytics = await analyticService.getItineraryAnalytics(filters);
       res.sendSuccess(analytics);
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
   
@@ -85,7 +85,7 @@ export const updateItineraryAnalytic = async (req, res, next) => {
       const updatedAnalytic = await analyticService.updateItineraryAnalytic(id, updateData);
       res.sendSuccess(updatedAnalytic);
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
   
@@ -95,6 +95,6 @@ export const deleteItineraryAnalytic = async (req, res, next) => {
       await analyticService.deleteItineraryAnalytic(id);
       res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
