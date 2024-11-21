@@ -18,7 +18,7 @@ export const getAllExamples = async (req, res, next) => {
     const examples = await exampleService.getAllExamples();
     res.sendSuccess(removeMongoFields(examples));
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
 
@@ -31,15 +31,7 @@ export const createExample = async (req, res, next) => {
       201
     );
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.sendError(new ValidationError('Validation failed', error.errors));
-    } else {
-      res.sendError(
-        new ValidationError('An error occurred while creating the example', [
-          { msg: error.message },
-        ])
-      );
-    }
+    next(error);
   }
 };
 
@@ -49,7 +41,7 @@ export const getExampleById = async (req, res, next) => {
     if (!example) throw new NotFoundError('Example not found');
     res.sendSuccess(removeMongoFields(example));
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
 
@@ -68,7 +60,7 @@ export const updateExample = async (req, res, next) => {
       'Example updated successfully'
     );
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
 
@@ -78,6 +70,6 @@ export const deleteExample = async (req, res, next) => {
     if (!deletedExample) throw new NotFoundError('Example not found');
     res.sendSuccess(null, 'Example deleted successfully', 204);
   } catch (error) {
-    res.sendError(error);
+    next(error);
   }
 };
