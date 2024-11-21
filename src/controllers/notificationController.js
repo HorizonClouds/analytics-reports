@@ -18,7 +18,7 @@ export const getAllNotifications = async (req, res, next) => {
         const notifications = await notificacionService.getAllNotifications();
         res.sendSuccess(removeMongoFields(notifications));
     } catch (error) {
-        res.sendError(error);
+      next(error);
     }
 };
 
@@ -34,18 +34,7 @@ export const createItineraryAnalytic = async (req, res, next) => {
         201 // Código de estado HTTP para creación exitosa
       );
     } catch (error) {
-      // Manejo de errores de validación
-      if (error.name === 'ValidationError') {
-        res.sendError(new ValidationError('Validation failed', error.errors));
-      } else {
-        // Manejo de otros errores generales
-        res.sendError(
-          new ValidationError(
-            'An error occurred while creating the itinerary analytic',
-            [{ msg: error.message }]
-          )
-        );
-      }
+      next(error);
     }
 };
   
@@ -55,7 +44,7 @@ export const getItineraryAnalytics = async (req, res, next) => {
       const analytics = await notificacionService.getItineraryAnalytics(filters);
       res.sendSuccess(analytics);
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
   
@@ -66,7 +55,7 @@ export const updateItineraryAnalytic = async (req, res, next) => {
       const updatedAnalytic = await notificacionService.updateItineraryAnalytic(id, updateData);
       res.sendSuccess(updatedAnalytic);
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
   
@@ -76,6 +65,6 @@ export const deleteItineraryAnalytic = async (req, res, next) => {
       await notificacionService.deleteItineraryAnalytic(id);
       res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
     } catch (error) {
-      res.sendError(error);
+      next(error);
     }
 };
