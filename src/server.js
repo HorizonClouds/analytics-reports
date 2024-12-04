@@ -12,11 +12,12 @@ import reportRoute from './routes/reportRoute.js';  // Asegúrate de que esté c
 import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
+import cors from 'cors'; // Import CORS middleware
 
 dotenv.config(); // Load environment variables
 
 const app = express(); // Create an Express application
-const port = process.env.BACKEND_PORT || 3000; // Define port
+const port = process.env.BACKEND_PORT || 6301; // Define port
 
 // Middlewares
 app.use(express.json()); // Parse JSON bodies
@@ -25,6 +26,8 @@ app.use((err, req, res, next) => {
   if (err) next(new BadJsonError('Invalid JSON', err.message));
   next();
 });
+app.use(cors());
+
 app.use(standardResponseMiddleware); 
 // Routes
 app.use('/api', apiRouter); // Use API routes
