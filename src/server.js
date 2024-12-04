@@ -21,16 +21,15 @@ const port = process.env.BACKEND_PORT || 6301; // Define port
 
 // Middlewares
 app.use(express.json()); // Parse JSON bodies
+app.use(cors());
+app.use(standardResponseMiddleware); 
 
 // Middleware to handle JSON parsing errors
-
 app.use((err, req, res, next) => {
   if (err) next(new BadJsonError('Invalid JSON', err.message));
   next();
 });
-app.use(cors());
 
-app.use(standardResponseMiddleware); 
 // Routes
 app.use('/api', apiRouter); // Use API routes
 app.use('/api', analyticRoute);

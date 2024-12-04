@@ -1,5 +1,8 @@
 import Models from '../models/analyticModel.js'; // Importa el objeto de modelos
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
+import dotenv from 'dotenv'; // Import dotenv for environment variables
+dotenv.config(); // Load environment variables
+
 
 export const getAnalyticById = async (id) => {
   try {
@@ -62,6 +65,9 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
     let analytic = await Models.UserAnalytic.findById(id);
 
+    //let apiURL = getAPI("analytics-reports")
+
+    //axios.get(`${apiURL}/analytics/${id}`)
     if (analytic) {
       return analytic;
     }
@@ -80,6 +86,16 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
     throw new BadRequestError('Error fetching or creating analytic', error);
   }
 };
+
+/*function getAPI(apiName){
+  let apiUrl
+  if(process.env.NODE_ENV === "development"){
+    apiUrl = apiConfig[apiName].development
+  } else if(process.env.NODE_ENV === "production"){
+    apiUrl = apiConfig[apiName].production
+  }
+  return apiUrl
+}*/
 
 export default {
   getAnalyticById,

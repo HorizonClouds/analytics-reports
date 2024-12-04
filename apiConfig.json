@@ -1,0 +1,6 @@
+{
+    "analytics-reports":{
+        "development": "localhost:6101/api/v1",
+        "production": ""
+    }
+}

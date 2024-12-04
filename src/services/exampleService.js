@@ -11,6 +11,7 @@ export const getAllExamples = async () => {
 
 export const createExample = async (data) => {
   try {
+    console.log(JSON.stringify(data))
     const newExample = new ExampleModel(data);
     return await newExample.save();
   } catch (error) {
