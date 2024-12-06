@@ -1,11 +1,145 @@
 openapi: 3.0.0
 info:
-  title: Analytics Service API
+  title: API Documentation
   version: 1.0.0
-  description: API documentation for the Analytics Service
+  description: Combined API documentation for Analytics and Report services
 servers:
   - url: /api/v1
+    description: Main API Server
+
 paths:
+  # Rutas del servicio de Report
+  /reports/{id}:
+    get:
+      summary: Get a report by ID
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the report to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A report successfully fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: '60c72b2f9b1d8f0d8d0b6f9e'
+                  type:
+                    type: string
+                    example: 'itinerary'
+                  reason:
+                    type: string
+                    example: 'Inappropriate content'
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: '2023-10-01T12:00:00Z'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: '2023-10-01T12:00:00Z'
+        '404':
+          description: Report not found
+
+  /reports/user/{userId}:
+    get:
+      summary: Get reports by user ID
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: The ID of the user whose reports to fetch
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of reports for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                      example: '60c72b2f9b1d8f0d8d0b6f9e'
+                    type:
+                      type: string
+                      example: 'publication'
+                    reason:
+                      type: string
+                      example: 'Inappropriate content'
+                    createdAt:
+                      type: string
+                      format: date-time
+                      example: '2023-10-01T12:00:00Z'
+                    updatedAt:
+                      type: string
+                      format: date-time
+                      example: '2023-10-01T12:00:00Z'
+        '404':
+          description: No reports found for the user
+
+  /reports:
+    post:
+      summary: Create a new report
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: '60c72b2f9b1d8f0d8d0b6f9e'
+                type:
+                  type: string
+                  enum: ['publication', 'itinerary']
+                  example: 'itinerary'
+                reason:
+                  type: string
+                  example: 'Spam'
+      responses:
+        '201':
+          description: The created report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: '60c72b2f9b1d8f0d8d0b6f9e'
+                  type:
+                    type: string
+                    example: 'itinerary'
+                  reason:
+                    type: string
+                    example: 'Spam'
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: '2023-10-01T12:00:00Z'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: '2023-10-01T12:00:00Z'
+
+  # Rutas del servicio de Analytics
   /analytics:
     get:
       summary: Get all analytics
@@ -67,6 +201,7 @@ paths:
                   timestamp:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
+
   /analytics/{id}:
     get:
       summary: Get an analytic by ID
@@ -103,62 +238,7 @@ paths:
                     example: '2023-10-01T12:00:00.000Z'
         '404':
           description: Analytic not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: Analytic not found
-                  appCode:
-                    type: string
-                    example: UNKNOWN_ERROR
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
-    post:
-      summary: Get or create an analytic by ID
-      tags:
-        - Analytics
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: ID of the analytic
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserAnalytic'
-      responses:
-        '200':
-          description: The analytic (fetched or newly created)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: Analytic fetched or created successfully
-                  data:
-                    $ref: '#/components/schemas/UserAnalytic'
-                  appCode:
-                    type: string
-                    example: OK
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+
   /analytics/user/{userId}:
     get:
       summary: Get analytics by user ID
@@ -197,23 +277,7 @@ paths:
                     example: '2023-10-01T12:00:00.000Z'
         '404':
           description: No analytics found for the user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: No analytics found for the user
-                  appCode:
-                    type: string
-                    example: UNKNOWN_ERROR
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+
 components:
   schemas:
     UserAnalytic:
