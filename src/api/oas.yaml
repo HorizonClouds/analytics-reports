@@ -1,19 +1,19 @@
 openapi: 3.0.0
 info:
-  title: Example API
+  title: Analytics Service API
   version: 1.0.0
-  description: API documentation for Example microservice
+  description: API documentation for the Analytics Service
 servers:
   - url: /api/v1
 paths:
-  /examples:
+  /analytics:
     get:
-      summary: Get all examples
+      summary: Get all analytics
       tags:
-        - Example
+        - Analytics
       responses:
         '200':
-          description: A list of examples
+          description: A list of analytics
           content:
             application/json:
               schema:
@@ -24,11 +24,11 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Success!
+                    example: Analytics fetched successfully
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Example'
+                      $ref: '#/components/schemas/UserAnalytic'
                   appCode:
                     type: string
                     example: OK
@@ -36,18 +36,18 @@ paths:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
     post:
-      summary: Create a new example
+      summary: Create a new analytic
       tags:
-        - Example
+        - Analytics
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewExample'
+              $ref: '#/components/schemas/NewAnalytic'
       responses:
         '201':
-          description: The created example
+          description: The created analytic
           content:
             application/json:
               schema:
@@ -58,30 +58,30 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Example created successfully
+                    example: Analytic created successfully
                   data:
-                    $ref: '#/components/schemas/Example'
+                    $ref: '#/components/schemas/UserAnalytic'
                   appCode:
                     type: string
                     example: OK
                   timestamp:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
-  /examples/{id}:
+  /analytics/{id}:
     get:
-      summary: Get a specific example by ID
+      summary: Get an analytic by ID
       tags:
-        - Example
+        - Analytics
       parameters:
         - in: path
           name: id
           required: true
-          description: ID of the example to get
+          description: ID of the analytic to fetch
           schema:
             type: string
       responses:
         '200':
-          description: The requested example
+          description: The requested analytic
           content:
             application/json:
               schema:
@@ -92,9 +92,9 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Success!
+                    example: Analytic fetched successfully
                   data:
-                    $ref: '#/components/schemas/Example'
+                    $ref: '#/components/schemas/UserAnalytic'
                   appCode:
                     type: string
                     example: OK
@@ -102,7 +102,7 @@ paths:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
         '404':
-          description: Example not found
+          description: Analytic not found
           content:
             application/json:
               schema:
@@ -113,22 +113,22 @@ paths:
                     example: error
                   message:
                     type: string
-                    example: Example not found
+                    example: Analytic not found
                   appCode:
                     type: string
                     example: UNKNOWN_ERROR
                   timestamp:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
-    put:
-      summary: Update an existing example by ID
+    post:
+      summary: Get or create an analytic by ID
       tags:
-        - Example
+        - Analytics
       parameters:
         - in: path
           name: id
           required: true
-          description: ID of the example to update
+          description: ID of the analytic
           schema:
             type: string
       requestBody:
@@ -136,10 +136,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Example'
+              $ref: '#/components/schemas/UserAnalytic'
       responses:
         '200':
-          description: The updated example
+          description: The analytic (fetched or newly created)
           content:
             application/json:
               schema:
@@ -150,9 +150,45 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Example updated successfully
+                    example: Analytic fetched or created successfully
                   data:
-                    $ref: '#/components/schemas/Example'
+                    $ref: '#/components/schemas/UserAnalytic'
+                  appCode:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    example: '2023-10-01T12:00:00.000Z'
+  /analytics/user/{userId}:
+    get:
+      summary: Get analytics by user ID
+      tags:
+        - Analytics
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: ID of the user whose analytics to fetch
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analytics for the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Analytics fetched successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserAnalytic'
                   appCode:
                     type: string
                     example: OK
@@ -160,7 +196,7 @@ paths:
                     type: string
                     example: '2023-10-01T12:00:00.000Z'
         '404':
-          description: Example not found
+          description: No analytics found for the user
           content:
             application/json:
               schema:
@@ -171,40 +207,7 @@ paths:
                     example: error
                   message:
                     type: string
-                    example: Example not found
-                  appCode:
-                    type: string
-                    example: UNKNOWN_ERROR
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
-    delete:
-      summary: Delete an example by ID
-      tags:
-        - Example
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: ID of the example to delete
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Successfully deleted
-        '404':
-          description: Example not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: Example not found
+                    example: No analytics found for the user
                   appCode:
                     type: string
                     example: UNKNOWN_ERROR
@@ -213,30 +216,58 @@ paths:
                     example: '2023-10-01T12:00:00.000Z'
 components:
   schemas:
-    Example:
+    UserAnalytic:
       type: object
       properties:
         _id:
           type: string
           example: '60c72b2f9b1d8f0d8d0b6f9e'
-        name:
+        userId:
           type: string
-          example: Example Name
-        value:
-          type: number
-          example: 123
-      required:
-        - name
-        - value
-    NewExample:
+          example: 'user123'
+        userItineraryAnalytic:
+          type: object
+          properties:
+            totalCommentsCount:
+              type: integer
+              example: 10
+            avgComments:
+              type: number
+              example: 2.5
+        userPublicationAnalytic:
+          type: object
+          properties:
+            totalCommentsCount:
+              type: integer
+              example: 15
+            averageLike:
+              type: number
+              example: 4.5
+        analysisDate:
+          type: string
+          format: date-time
+          example: '2023-12-01T12:00:00.000Z'
+    NewAnalytic:
       type: object
       properties:
-        name:
+        userId:
           type: string
-          example: Example Name
-        value:
-          type: number
-          example: 123
-      required:
-        - name
-        - value
+          example: 'user123'
+        userItineraryAnalytic:
+          type: object
+          properties:
+            totalCommentsCount:
+              type: integer
+              example: 10
+            avgComments:
+              type: number
+              example: 2.5
+        userPublicationAnalytic:
+          type: object
+          properties:
+            totalCommentsCount:
+              type: integer
+              example: 15
+            averageLike:
+              type: number
+              example: 4.5
