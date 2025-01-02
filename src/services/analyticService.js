@@ -12,7 +12,10 @@ export const getAnalyticById = async (id) => {
     }
     return analytic;
   } catch (error) {
-    throw new NotFoundError('Error fetching analytic by ID', error);
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching analytic by ID', error);
   }
 };
 
@@ -20,12 +23,15 @@ export const getAnalyticById = async (id) => {
 export const getAnalyticByUserId = async (userId) => {
   try {
     const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
-    if (!analyticByUser) {
+    if (analyticByUser.length === 0) {
       throw new NotFoundError('Analytic not found for the specified userId');
     }
     return analyticByUser;
   } catch (error) {
-    throw new NotFoundError('Error fetching analytic by userId', error);
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching analytic by userId', error);
   }
 };
 
@@ -65,15 +71,10 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
     let analytic = await Models.UserAnalytic.findById(id);
 
-    //let apiURL = getAPI("analytics-reports")
-
-    //axios.get(`${apiURL}/analytics/${id}`)
     if (analytic) {
       return analytic;
     }
 
-    //este analytic data lo pasamos del servicio de manuel, atraves de axios.get 
-    //para el usuario pasado.
     const newAnalytic = new Models.UserAnalytic({
       _id: id, // Usa el ID proporcionado para el nuevo análisis
       ...analyticData, // Usa los datos adicionales que se pasan
@@ -83,6 +84,9 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
     return analytic;
   } catch (error) {
     console.error('Error in getOrCreateAnalyticById:', error);
+    if (error.name === 'ValidationError') {
+      throw new BadRequestError('Validation error creating analytic', error);
+    }
     throw new BadRequestError('Error fetching or creating analytic', error);
   }
 };
