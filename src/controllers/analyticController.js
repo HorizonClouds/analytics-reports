@@ -2,15 +2,15 @@ import analyticService from '../services/analyticService.js';
 import { NotFoundError, ValidationError } from '../utils/customErrors.js';
 
 const removeMongoFields = (data) => {
-    if (Array.isArray(data)) {
-        return data.map((item) => {
-            const { __v, ...rest } = item.toObject();
-            return rest;
-        });
-    } else {
-        const { __v, ...rest } = data.toObject();
-        return rest;
-    }
+  if (Array.isArray(data)) {
+    return data.map((item) => {
+      const { __v, ...rest } = item.toObject();
+      return rest;
+    });
+  } else {
+    const { __v, ...rest } = data.toObject();
+    return rest;
+  }
 };
 export const getAnalyticById = async (req, res, next) => {
   try {
@@ -23,19 +23,19 @@ export const getAnalyticById = async (req, res, next) => {
   }
 };
 export const createAnalytic = async (req, res, next) => {
-    try {
-      // Llamada al servicio para crear un nuevo análisis de itinerario
-      const newAnalytic = await analyticService.createAnalytic(req.body);
-  
-      // Respuesta exitosa con los datos creados y mensaje
-      res.sendSuccess(
-        removeMongoFields(newAnalytic), // Limpia los campos internos de Mongo (_id, __v)
-        'Analytic created successfully',
-        201 // Código de estado HTTP para creación exitosa
-      );
-    } catch (error) {
-      next(error);
-    }
+  try {
+    // Llamada al servicio para crear un nuevo análisis de itinerario
+    const newAnalytic = await analyticService.createAnalytic(req.body);
+
+    // Respuesta exitosa con los datos creados y mensaje
+    res.sendSuccess(
+      removeMongoFields(newAnalytic), // Limpia los campos internos de Mongo (_id, __v)
+      'Analytic created successfully',
+      201 // Código de estado HTTP para creación exitosa
+    );
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getAnalyticByUserId = async (req, res) => {
@@ -47,26 +47,26 @@ export const getAnalyticByUserId = async (req, res) => {
     next(error);
   }
 };
- 
+
 export const getAllAnalytics = async (req, res, next) => {
   try {
-      const analytics = await analyticService.getAllAnalytics();
-      res.sendSuccess(removeMongoFields(analytics));
+    const analytics = await analyticService.getAllAnalytics();
+    res.sendSuccess(removeMongoFields(analytics));
   } catch (error) {
     next(error);
   }
 };
 
 export const getItineraryAnalytics = async (req, res, next) => {
-    try {
-      const filters = req.query; // Filtros opcionales enviados en la solicitud
-      const analytics = await analyticService.getItineraryAnalytics(filters);
-      res.sendSuccess(analytics);
-    } catch (error) {
-      next(error);
-    }
+  try {
+    const filters = req.query; // Filtros opcionales enviados en la solicitud
+    const analytics = await analyticService.getItineraryAnalytics(filters);
+    res.sendSuccess(analytics);
+  } catch (error) {
+    next(error);
+  }
 };
-  
+
 export const getOrCreateAnalytic = async (req, res) => {
   try {
     const { id } = req.params;
@@ -86,23 +86,23 @@ export const getOrCreateAnalytic = async (req, res) => {
   }
 };
 
-//export const updateItineraryAnalytic = async (req, res, next) => {
-//  try {
-//    const { id } = req.params; // ID del análisis a actualizar
-//    const updateData = req.body;
-//    const updatedAnalytic = await analyticService.updateItineraryAnalytic(id, updateData);
-//    res.sendSuccess(updatedAnalytic);
-//  } catch (error) {
-//    next(error);
-//  }
-//};
+export const updateAnalytic = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const updatedAnalytic = await analyticService.updateAnalytic(id, updateData);
+    res.sendSuccess(removeMongoFields(updatedAnalytic));
+  } catch (error) {
+    next(error);
+  };
 
-//export const deleteItineraryAnalytic = async (req, res, next) => {
-//  try {
-//    const { id } = req.params;
-//    await analyticService.deleteItineraryAnalytic(id);
-//    res.sendSuccess({ message: 'Itinerary analytic deleted successfully' });
-//  } catch (error) {
-//    next(error);
-//  }
-//};
+}
+export const deleteAnalytic = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await analyticService.deleteAnalytic(id);
+    res.sendSuccess({ message: 'Analytic deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+}

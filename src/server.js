@@ -1,7 +1,6 @@
 // server.js
 import express from 'express'; // Import Express framework
 import { swaggerSetup } from './swagger.js'; // Import Swagger setup
-import apiRouter from './routes/exampleRoute.js'; // Import API routes
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 import standardResponseMiddleware from './middlewares/standardResponseMiddleware.js'; // Import custom response middleware
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -13,6 +12,8 @@ import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
+import './utils/usingProducerExample.js';
+import './utils/logger.js';
 
 dotenv.config(); // Load environment variables
 
@@ -31,7 +32,6 @@ app.use((err, req, res, next) => {
 });
 
 // Routes
-app.use('/api', apiRouter); // Use API routes
 app.use('/api', analyticRoute);
 app.use('/api', reportRoute);
 
@@ -58,8 +58,10 @@ if (process.env.NODE_ENV === 'test') {
 connectDB()
   .then(() => {
     app.listen(port, () => {
-      console.log(`Server is running on http://localhost:${port}`);
-      console.log(`API documentation is available at http://localhost:${port}/api-docs`);
+      logger.info(`Server is running on http://localhost:${port}`);
+      logger.info(`API documentation is available at http://localhost:${port}/api-docs`);
+      logger.debug('Debugging information');
+      logger.info('Service has started successfully');
     });
   })
   .catch((error) => {

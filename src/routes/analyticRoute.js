@@ -11,4 +11,7 @@ router.post('/v1/analytics', analyticController.createAnalytic); // Nueva ruta P
 router.get('/v1/analytics/user/:userId', analyticController.getAnalyticByUserId);
 router.post('/v1/analytics/:id', analyticController.getOrCreateAnalytic);
 
+router.put('/v1/analytics/:id', analyticController.updateAnalytic);
+router.delete('/v1/analytics/:id', analyticController.deleteAnalytic);
+
 export default router;

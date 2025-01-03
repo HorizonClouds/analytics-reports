@@ -101,12 +101,49 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
   return apiUrl
 }*/
 
+export const updateAnalytic = async (id, updateData) => {
+  try {
+
+    const analytic = await Models.UserAnalytic.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!analytic) {
+      throw new NotFoundError('Analytic not found');
+    }
+    return analytic;
+  } catch (error) {
+
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error updating analytic', error);
+  }
+};
+
+
+export const deleteAnalytic = async (id) => {
+  try {
+    const analytic = await Models.UserAnalytic.findByIdAndDelete(id);
+    if (!analytic) {
+      throw new NotFoundError('Analytic not found');
+    }
+    return analytic;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error deleting analytic', error);
+  }
+};
+
+
 export default {
   getAnalyticById,
   getAllAnalytics,
   createAnalytic,
   getAnalyticByUserId,
   getItineraryAnalytics,
-  getOrCreateAnalyticById
+  getOrCreateAnalyticById,
+  updateAnalytic,
+  deleteAnalytic
 };
 
