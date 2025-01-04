@@ -1,6 +1,5 @@
 import Models from '../models/reportModel.js'; // Importa el objeto de modelos
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
-import mongoose from 'mongoose'; // Necesario para manejar validaciones de Mongoose
 
 export const getReportById = async (id) => {
   try {
@@ -27,22 +26,14 @@ export const getReportByUserId = async (userId) => {
 };
 
 export const createReport = async (reportData) => {
-  try {
-    const newReport = new Models.Report(reportData);
-    return await newReport.save();
-  } catch (error) {
-    // Si el error es un error de validación de Mongoose
-    if (error instanceof mongoose.Error.ValidationError) {
-      console.error('Validation error creating report:', error);
-      // Puedes agregar detalles adicionales si es necesario
-      throw new BadRequestError('Report validation failed', error);
+    try {
+      const newReport = new Models.Report(reportData);
+      return await newReport.save();
+    } catch (error) {
+      console.error('Error creating report:', error);
+      throw new BadRequestError('Error creating report', error);
     }
-
-    // Si el error no es de validación, lanza el error genérico
-    console.error('Error creating report:', error);
-    throw new BadRequestError('Error creating report', error);
-  }
-};
+  };
 
 export default {
     getReportById,
