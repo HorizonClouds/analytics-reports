@@ -92,7 +92,13 @@ describe('[Integration][Service] Report Tests', () => {
             type: 'invalid_type', // Tipo no permitido
             reason: '' // Razón vacía
         };
-        await expect(createReport(invalidReport)).rejects.toThrow('Report validation failed');
+    
+        try {
+            await createReport(invalidReport);
+        } catch (error) {
+            expect(error.errors.type.message).toBe('`invalid_type` is not a valid enum value for path `type`.');
+            expect(error.errors.reason.message).toBe('Path `reason` is required.');
+        }
     });
 
 });
