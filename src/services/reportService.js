@@ -30,7 +30,6 @@ export const createReport = async (reportData) => {
       const newReport = new Models.Report(reportData);
       return await newReport.save();
     } catch (error) {
-      console.error('Error creating report:', error);
       throw new BadRequestError('Error creating report', error);
     }
   };
