@@ -92,7 +92,7 @@ describe('[Integration][Service] Report Tests', () => {
             type: 'invalid_type', // Tipo no permitido
             reason: '' // Razón vacía
         };
-        await expect(createReport(invalidReport)).rejects.toThrow();
+        await expect(createReport(invalidReport)).rejects.toThrow('Report validation failed');
     });
 
 });
