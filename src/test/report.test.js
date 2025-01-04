@@ -88,23 +88,25 @@ describe('[Integration][Service] Report Tests', () => {
 
     it('[+] should handle creation errors gracefully', async () => {
         const invalidReport = {
-            userId: new mongoose.Types.ObjectId(),
-            type: 'invalid_type', // Tipo no permitido
-            reason: '' // Razón vacía
+          userId: new mongoose.Types.ObjectId(),
+          type: 'invalid_type', // Tipo no permitido
+          reason: '' // Razón vacía
         };
-    
+      
         try {
-            await createReport(invalidReport);
+          await createReport(invalidReport);
         } catch (error) {
-            console.error(error);
-            if (error.errors) {
-                expect(error.errors.type.message).toBe('`invalid_type` is not a valid enum value for path `type`.');
-                expect(error.errors.reason.message).toBe('Path `reason` is required.');
-            } else {
-                expect(error.message).toBe('Report validation failed');
-            }
+          // Verificar que el error contiene la información de validación
+          expect(error.message).toBe('Report validation failed');
+      
+          // Verificar que el error tiene los detalles de la validación
+          if (error.errors) {
+            expect(error.errors.type).toBeDefined(); // Verificar si el error de tipo está presente
+            expect(error.errors.reason).toBeDefined(); // Verificar si el error de razón está presente
+          }
         }
-    });
+      });
+      
     
 
 });
