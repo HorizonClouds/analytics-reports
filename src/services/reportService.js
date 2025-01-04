@@ -1,5 +1,6 @@
 import Models from '../models/reportModel.js'; // Importa el objeto de modelos
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
+import mongoose from 'mongoose'; // Necesario para manejar validaciones de Mongoose
 
 export const getReportById = async (id) => {
   try {
