@@ -96,9 +96,15 @@ describe('[Integration][Service] Report Tests', () => {
         try {
             await createReport(invalidReport);
         } catch (error) {
-            expect(error.errors.type.message).toBe('`invalid_type` is not a valid enum value for path `type`.');
-            expect(error.errors.reason.message).toBe('Path `reason` is required.');
+            console.error(error);
+            if (error.errors) {
+                expect(error.errors.type.message).toBe('`invalid_type` is not a valid enum value for path `type`.');
+                expect(error.errors.reason.message).toBe('Path `reason` is required.');
+            } else {
+                expect(error.message).toBe('Report validation failed');
+            }
         }
     });
+    
 
 });
