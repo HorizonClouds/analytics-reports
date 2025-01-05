@@ -1,5 +1,6 @@
 import analyticService from '../services/analyticService.js';
 import { NotFoundError, ValidationError } from '../utils/customErrors.js';
+import mongoose from 'mongoose';
 
 const removeMongoFields = (data) => {
   if (Array.isArray(data)) {
@@ -35,6 +36,35 @@ export const createAnalytic = async (req, res, next) => {
     );
   } catch (error) {
     next(error);
+  }
+};
+
+export const saveAnalytic = async (req, res) => {
+  try {
+    const { id } = req.params;  // Obtenemos el `id` de la URL
+    const analyticData = req.body;  // Los datos de la analítica provienen del cuerpo de la solicitud
+
+    // Si no pasamos el `id` (es decir, id está indefinido), se creará una nueva analítica
+    let analytic;
+
+    if (id) {
+      // Si hay un `id` en la URL, intentamos actualizar la analítica existente
+      analytic = await analyticService.saveAnalytic(id, analyticData);  // Llamamos al servicio para actualizar
+    } else {
+      // Si no hay `id`, creamos una nueva analítica
+      analytic = await analyticService.saveAnalytic(null, analyticData);  // Llamamos al servicio para crear
+    }
+
+    return res.status(200).json({
+      message: 'Analytic saved or updated successfully',
+      data: analytic,  // Devolvemos la analítica creada o actualizada
+    });
+  } catch (error) {
+    console.error('Error in saveAnalyticController:', error);
+    return res.status(500).json({
+      message: 'Error saving or updating analytic',
+      error: error.message,
+    });
   }
 };
 

@@ -2,6 +2,7 @@ import Models from '../models/analyticModel.js'; // Importa el objeto de modelos
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 dotenv.config(); // Load environment variables
+import mongoose from 'mongoose';
 
 
 export const getAnalyticById = async (id) => {
@@ -45,17 +46,6 @@ export const getAllAnalytics = async () => {
   }
 };
 
-//Crear un análisis de itinerarios
-export const createAnalytic = async (analyticData) => {
-  try {
-    const newAnalytic = new Models.UserAnalytic(analyticData);
-    return await newAnalytic.save();
-  } catch (error) {
-    console.error('Error creating analytic:', error);
-    throw new BadRequestError('Error creating analytic', error);
-  }
-};
-
 // Leer análisis de itinerarios (con filtros opcionales)
 export const getItineraryAnalytics = async (filters = {}) => {
   try {
@@ -69,18 +59,31 @@ export const getItineraryAnalytics = async (filters = {}) => {
 
 export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
+    console.log('ID recibido:', id); // Imprime el id recibido para depuración
+
+    // Verifica si el id es un ObjectId válido
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      // Si el id no es válido, genera uno nuevo
+      console.log('ID no válido o no proporcionado, generando uno nuevo');
+      id = new mongoose.Types.ObjectId();
+    }
+
+    // Busca el análisis en la base de datos por id
     let analytic = await Models.UserAnalytic.findById(id);
 
+    // Si ya existe, lo retornamos
     if (analytic) {
       return analytic;
     }
 
+    // Si no existe, creamos un nuevo análisis
     const newAnalytic = new Models.UserAnalytic({
-      _id: id, // Usa el ID proporcionado para el nuevo análisis
+      _id: id, // Usa el ID proporcionado o generado para el nuevo análisis
       ...analyticData, // Usa los datos adicionales que se pasan
     });
 
-    analytic = await newAnalytic.save(); // Guarda el nuevo análisis en la base de datos
+    // Guarda el nuevo análisis en la base de datos
+    analytic = await newAnalytic.save();
     return analytic;
   } catch (error) {
     console.error('Error in getOrCreateAnalyticById:', error);
@@ -91,15 +94,41 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
   }
 };
 
-/*function getAPI(apiName){
-  let apiUrl
-  if(process.env.NODE_ENV === "development"){
-    apiUrl = apiConfig[apiName].development
-  } else if(process.env.NODE_ENV === "production"){
-    apiUrl = apiConfig[apiName].production
+// Crear una nueva analítica
+export const createAnalytic = async (analyticData) => {
+  try {
+    const newAnalytic = new Models.UserAnalytic(analyticData);
+    return await newAnalytic.save();
+  } catch (error) {
+    console.error('Error creating analytic:', error);
+    throw new BadRequestError('Error creating analytic', error);
   }
-  return apiUrl
-}*/
+};
+
+// Guardar o actualizar analítica
+export const saveAnalytic = async (id, analyticData) => {
+  try {
+    if (id && mongoose.Types.ObjectId.isValid(id)) {
+      // Si el `id` es válido, intentamos buscar y actualizar la analítica
+      const existingAnalytic = await Models.UserAnalytic.findById(id);
+
+      if (existingAnalytic) {
+
+        // Guardamos los cambios
+        return await updateAnalytic(id, analyticData);  // Devolvemos la analítica actualizada
+      } else {
+        throw new Error(`Analytic with id ${id} not found`);
+      }
+    } else {
+      // Guardamos la nueva analítica
+      return await createAnalytic(analyticData);  // Devolvemos la nueva analítica creada
+    }
+  } catch (error) {
+    console.error('Error saving or updating analytic:', error);
+    throw error;  // Lanza el error para ser manejado por el controlador
+  }
+};
+
 
 export const updateAnalytic = async (id, updateData) => {
   try {
@@ -135,7 +164,6 @@ export const deleteAnalytic = async (id) => {
   }
 };
 
-
 export default {
   getAnalyticById,
   getAllAnalytics,
@@ -144,6 +172,7 @@ export default {
   getItineraryAnalytics,
   getOrCreateAnalyticById,
   updateAnalytic,
-  deleteAnalytic
+  deleteAnalytic,
+  saveAnalytic
 };
 

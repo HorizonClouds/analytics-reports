@@ -13,5 +13,6 @@ router.post('/v1/analytics/:id', analyticController.getOrCreateAnalytic);
 
 router.put('/v1/analytics/:id', analyticController.updateAnalytic);
 router.delete('/v1/analytics/:id', analyticController.deleteAnalytic);
+router.post('/v1/analytics/saveAnalytic/:id?', analyticController.saveAnalytic);
 
 export default router;
