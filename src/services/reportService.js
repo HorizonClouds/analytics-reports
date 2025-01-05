@@ -1,4 +1,4 @@
-import Models from '../models/reportModel.js'; // Importa el objeto de modelos
+import Models from '../models/reportModel.js';
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 
 export const getReportById = async (id) => {
@@ -9,19 +9,25 @@ export const getReportById = async (id) => {
     }
     return report;
   } catch (error) {
-    throw new NotFoundError('Error fetching report by ID', error);
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching report by ID', error);
   }
 };
 
 export const getReportByUserId = async (userId) => {
   try {
-    const reportByUser = await Models.Report.find({ userId }); // Busca por userId
-    if (!reportByUser) {
-      throw new NotFoundError('Report not found for the specified userId');
+    const reports = await Models.Report.find({ userId });
+    if (reports.length === 0) {
+      throw new NotFoundError('No reports found for the specified userId');
     }
-    return reportByUser;
+    return reports;
   } catch (error) {
-    throw new NotFoundError('Error fetching report by userId', error);
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching reports by userId', error);
   }
 };
 
@@ -39,4 +45,3 @@ export default {
     createReport,
     getReportByUserId
   };
-  

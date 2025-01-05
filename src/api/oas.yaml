@@ -46,6 +46,12 @@ paths:
                     type: string
                     format: date-time
                     example: '2023-10-01T12:00:00Z'
+                  details:
+                    type: object
+                    properties:
+                      additionalInfo:
+                        type: string
+                        example: 'Some details'
         '404':
           description: Report not found
 
@@ -88,6 +94,12 @@ paths:
                       type: string
                       format: date-time
                       example: '2023-10-01T12:00:00Z'
+                    details:
+                      type: object
+                      properties:
+                        additionalInfo:
+                          type: string
+                          example: 'Some details'
         '404':
           description: No reports found for the user
 
@@ -113,6 +125,12 @@ paths:
                 reason:
                   type: string
                   example: 'Spam'
+                details:
+                  type: object
+                  properties:
+                    additionalInfo:
+                      type: string
+                      example: 'Some details'
       responses:
         '201':
           description: The created report
@@ -138,6 +156,12 @@ paths:
                     type: string
                     format: date-time
                     example: '2023-10-01T12:00:00Z'
+                  details:
+                    type: object
+                    properties:
+                      additionalInfo:
+                        type: string
+                        example: 'Some details'
 
   # Rutas del servicio de Analytics
   /analytics:
@@ -298,6 +322,15 @@ components:
             avgComments:
               type: number
               example: 2.5
+            totalReviewsCount:
+              type: integer
+              example: 5
+            averageReviewScore:
+              type: number
+              example: 4.5
+            bestItineraryByAvgReviewScore:
+              type: string
+              example: '60c72b2f9b1d8f0d8d0b6f9e'
         userPublicationAnalytic:
           type: object
           properties:
@@ -307,6 +340,18 @@ components:
             averageLike:
               type: number
               example: 4.5
+            totalLikesCount:
+              type: integer
+              example: 100
+            commentsPerPublication:
+              type: number
+              example: 5
+        data:
+          type: object
+          properties:
+            someField:
+              type: string
+              example: 'someValue'
         analysisDate:
           type: string
           format: date-time
@@ -326,6 +371,15 @@ components:
             avgComments:
               type: number
               example: 2.5
+            totalReviewsCount:
+              type: integer
+              example: 5
+            averageReviewScore:
+              type: number
+              example: 4.5
+            bestItineraryByAvgReviewScore:
+              type: string
+              example: '60c72b2f9b1d8f0d8d0b6f9e'
         userPublicationAnalytic:
           type: object
           properties:
@@ -335,3 +389,15 @@ components:
             averageLike:
               type: number
               example: 4.5
+            totalLikesCount:
+              type: integer
+              example: 100
+            commentsPerPublication:
+              type: number
+              example: 5
+        data:
+          type: object
+          properties:
+            someField:
+              type: string
+              example: 'someValue'

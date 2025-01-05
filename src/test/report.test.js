@@ -7,6 +7,7 @@ import {
     createReport
 } from '../services/reportService.js';
 import Models from '../models/reportModel.js';
+import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 
 const exampleReport = {
     userId: new mongoose.Types.ObjectId(),
@@ -68,7 +69,7 @@ describe('[Integration][Service] Report Tests', () => {
 
     it('[-] should return NOT FOUND for non-existent report ID', async () => {
         const nonExistentId = new mongoose.Types.ObjectId().toString();
-        await expect(getReportById(nonExistentId)).rejects.toThrow('Error fetching report by ID');
+        await expect(getReportById(nonExistentId)).rejects.toThrow(NotFoundError);
     });
 
     it('[+] should GET reports by userId', async () => {
@@ -82,8 +83,7 @@ describe('[Integration][Service] Report Tests', () => {
 
     it('[-] should return NOT FOUND for reports by non-existent userId', async () => {
         const nonExistentUserId = new mongoose.Types.ObjectId().toString();
-        const result = await getReportByUserId(nonExistentUserId);
-        expect(result).toEqual([]);
+        await expect(getReportByUserId(nonExistentUserId)).rejects.toThrow(NotFoundError);
     });
 
     it('[+] should handle creation errors gracefully', async () => {
