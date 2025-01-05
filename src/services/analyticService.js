@@ -109,23 +109,33 @@ export const createAnalytic = async (analyticData) => {
 export const saveAnalytic = async (id, analyticData) => {
   try {
     if (id && mongoose.Types.ObjectId.isValid(id)) {
-      // Si el `id` es válido, intentamos buscar y actualizar la analítica
+      // Si el `id` es válido, intentamos buscar la analítica existente
       const existingAnalytic = await Models.UserAnalytic.findById(id);
 
       if (existingAnalytic) {
+        // Comprobar si ha pasado más de un día desde la última actualización
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-        // Guardamos los cambios
-        return await updateAnalytic(id, analyticData);  // Devolvemos la analítica actualizada
+        if (existingAnalytic.analysisDate < oneDayAgo) {
+        
+          return await updateAnalytic(id, analyticData);
+        } else {
+          console.log('No se actualizó la analítica porque no ha pasado suficiente tiempo');
+          return existingAnalytic;
+        }
       } else {
         throw new Error(`Analytic with id ${id} not found`);
       }
     } else {
-      // Guardamos la nueva analítica
-      return await createAnalytic(analyticData);  // Devolvemos la nueva analítica creada
+      // Si no hay un `id` válido, creamos una nueva analítica
+      const newAnalytic = await createAnalytic(analyticData);
+      console.log('Nueva analítica creada');
+      return newAnalytic;
     }
   } catch (error) {
     console.error('Error saving or updating analytic:', error);
-    throw error;  // Lanza el error para ser manejado por el controlador
+    throw error; // Lanza el error para ser manejado por el controlador
   }
 };
 

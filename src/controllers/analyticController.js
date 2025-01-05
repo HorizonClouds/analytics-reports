@@ -68,6 +68,7 @@ export const saveAnalytic = async (req, res) => {
   }
 };
 
+
 export const getAnalyticByUserId = async (req, res) => {
   try {
     const { userId } = req.params; // Extrae userId de los parámetros de la solicitud

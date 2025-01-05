@@ -14,6 +14,8 @@ import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
 import './utils/usingProducerExample.js';
 import './utils/logger.js';
+import './cron/cron.js'; // Importa tu cron job
+import { updateAnalyticsJob } from './cron/cron.js'; // Asegúrate de importar la función correctamente
 
 dotenv.config(); // Load environment variables
 
@@ -35,6 +37,24 @@ app.use((err, req, res, next) => {
 app.use('/api', analyticRoute);
 app.use('/api', reportRoute);
 
+//PRUEBA CRON
+app.post('/api/updateAnalytics', async (req, res) => {
+  try {
+    //SIMULACION DE LO QUE NOS LLEGA DE OTROS MICROSERVICIOS
+    const { userId, id} = req.body;  // Obtener el userId del cuerpo de la solicitud
+
+    if (!userId) {
+      return res.status(400).json({ message: 'Se requiere un userId' });
+    }
+
+    // Llamamos a la función de actualización de analíticas, pasando el userId
+    await updateAnalyticsJob(id, userId);
+    res.status(200).json({ message: 'Análisis actualizado con éxito' });
+  } catch (error) {
+    console.error('Error actualizando las analíticas', error);
+    res.status(500).json({ message: 'Error al actualizar las analíticas', error: error.message });
+  }
+});
 
 app.get('/', (req, res) => {
   // Redirect to API documentation
