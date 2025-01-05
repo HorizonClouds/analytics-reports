@@ -34,17 +34,15 @@ export const validateReportBody = (req, res, next) => {
     .catch((err) => next(err)); // If there is an error, pass it to the error-handling middleware
 };
 
-// Validator for query filters (optional userId filter)
+// Validator for query filters
 export const validateFilters = (req, res, next) => {
-  Promise.all([
-    query('userId')
-      .optional()
-      .custom((value) => mongoose.Types.ObjectId.isValid(value))
-      .withMessage('Invalid userId format')
-      .run(req),
-  ])
-    .then(() => next()) // If all validations pass, continue to the next middleware
-    .catch((err) => next(err)); // If there is an error, pass it to the error-handling middleware
+  param('userId') // Usamos 'param' para validación de parámetros en la URL
+    .optional()
+    .custom((value) => mongoose.Types.ObjectId.isValid(value))
+    .withMessage('Invalid userId format')
+    .run(req) // Ejecuta la validación sobre la solicitud
+    .then(() => next()) // Si pasa la validación, continúa al siguiente middleware
+    .catch((err) => next(err)); // Si hay un error, lo pasamos al middleware de error
 };
 
 // Middleware to handle validation errors
