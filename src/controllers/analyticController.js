@@ -39,7 +39,7 @@ export const createAnalytic = async (req, res, next) => {
   }
 };
 
-export const saveAnalytic = async (req, res) => {
+export const saveAnalytic = async (req, res, next) => {
   try {
     const { id } = req.params;  // Obtenemos el `id` de la URL
     const analyticData = req.body;  // Los datos de la analítica provienen del cuerpo de la solicitud
@@ -69,7 +69,7 @@ export const saveAnalytic = async (req, res) => {
 };
 
 
-export const getAnalyticByUserId = async (req, res) => {
+export const getAnalyticByUserId = async (req, res, next) => {
   try {
     const { userId } = req.params; // Extrae userId de los parámetros de la solicitud
     const analyticByUser = await analyticService.getAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
@@ -98,7 +98,7 @@ export const getItineraryAnalytics = async (req, res, next) => {
   }
 };
 
-export const getOrCreateAnalytic = async (req, res) => {
+export const getOrCreateAnalytic = async (req, res, next) => {
   try {
     const { id } = req.params;
     const analyticData = req.body;

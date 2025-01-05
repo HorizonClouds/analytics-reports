@@ -31,15 +31,13 @@ export const validateAnalyticBody = (req, res, next) => {
 
 // Validator for query filters
 export const validateFilters = (req, res, next) => {
-  Promise.all([
-    query('userId')
-      .optional()
-      .custom((value) => mongoose.Types.ObjectId.isValid(value))
-      .withMessage('Invalid userId format')
-      .run(req)
-  ])
-    .then(() => next()) // Si todas las validaciones pasaron, continúa con el siguiente middleware
-    .catch((err) => next(err)); // Si hubo un error, lo pasamos al middleware de error
+  param('userId') // Usamos 'param' para validación de parámetros en la URL
+    .optional()
+    .custom((value) => mongoose.Types.ObjectId.isValid(value))
+    .withMessage('Invalid userId format')
+    .run(req) // Ejecuta la validación sobre la solicitud
+    .then(() => next()) // Si pasa la validación, continúa al siguiente middleware
+    .catch((err) => next(err)); // Si hay un error, lo pasamos al middleware de error
 };
 
 // Middleware to handle validation errors
