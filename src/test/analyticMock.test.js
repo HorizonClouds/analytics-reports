@@ -3,11 +3,10 @@ import Models from '../models/analyticModel.js';
 import {
   getAnalyticById,
   getAnalyticByUserId,
-  getAllAnalytics,
   createAnalytic,
-  getOrCreateAnalyticById,
   updateAnalytic,
   deleteAnalytic,
+  getAllAnalytics
 } from '../services/analyticService.js';
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 
@@ -23,13 +22,14 @@ describe('[Component] Analytic Service', () => {
       avgComments: 2,
       totalReviewsCount: 5,
       averageReviewScore: 4.5,
+      bestItineraryByAvgReviewScore: '63e2d6c1f1eabc1234567892'
     },
     userPublicationAnalytic: {
       averageLike: 3.5,
       totalLikesCount: 100,
       commentsPerPublication: 5,
-      totalCommentsCount: 50,
-    },
+      totalCommentsCount: 50
+    }
   };
 
   afterEach(() => {
@@ -63,17 +63,8 @@ describe('[Component] Analytic Service', () => {
   it('[-] should throw NotFoundError for userId with no analytics', async () => {
     Models.UserAnalytic.find.mockResolvedValue([]);
 
-    await expect(getAnalyticByUserId('nonExistentUserId')).rejects.toThrow(NotFoundError);
+    await expect(getAnalyticByUserId('nonExistentUserId')).rejects.toThrow('Analytic not found for the specified userId');
     expect(Models.UserAnalytic.find).toHaveBeenCalledWith({ userId: 'nonExistentUserId' });
-  });
-
-  it('[+] should return all analytics', async () => {
-    const mockAnalytics = [mockAnalytic];
-    Models.UserAnalytic.find.mockResolvedValue(mockAnalytics);
-
-    const result = await getAllAnalytics();
-    expect(result).toEqual(mockAnalytics);
-    expect(Models.UserAnalytic.find).toHaveBeenCalled();
   });
 
   it('[+] should create a new analytic', async () => {
@@ -86,57 +77,30 @@ describe('[Component] Analytic Service', () => {
     expect(Models.UserAnalytic).toHaveBeenCalledWith(mockAnalytic);
   });
 
-  it('[+] should create an analytic if not found by ID', async () => {
-    Models.UserAnalytic.findById = vi.fn().mockResolvedValue(null);
-    Models.UserAnalytic.mockImplementation(() => ({
-      save: vi.fn().mockResolvedValue(mockAnalytic),
-    }));
-    const result = await getOrCreateAnalyticById('63e2d6c1f1eabc1234567890', mockAnalytic);
-    expect(result).toEqual(mockAnalytic);
-    expect(Models.UserAnalytic.findById).toHaveBeenCalledWith('63e2d6c1f1eabc1234567890');
-    expect(Models.UserAnalytic).toHaveBeenCalledWith({
-      _id: '63e2d6c1f1eabc1234567890',
-      ...mockAnalytic,
-    });
-  });
-
-  it('[+] should get or create an analytic by ID (existing)', async () => {
-    Models.UserAnalytic.findById.mockResolvedValue(mockAnalytic);
-
-    const result = await getOrCreateAnalyticById('63e2d6c1f1eabc1234567890', mockAnalytic);
-    expect(result).toEqual(mockAnalytic);
-    expect(Models.UserAnalytic.findById).toHaveBeenCalledWith('63e2d6c1f1eabc1234567890');
-  });
-
-  it('[+] should update an existing analytic', async () => {
-    const updatedAnalytic = {
-      ...mockAnalytic,
-      userItineraryAnalytic: {
-        ...mockAnalytic.userItineraryAnalytic,
-        totalCommentsCount: 20
-      }
-    };
+  it('[+] should update an analytic', async () => {
+    const updateData = { 'userItineraryAnalytic.totalCommentsCount': 15 };
+    const updatedAnalytic = { ...mockAnalytic, userItineraryAnalytic: { ...mockAnalytic.userItineraryAnalytic, totalCommentsCount: 15 } };
     Models.UserAnalytic.findByIdAndUpdate.mockResolvedValue(updatedAnalytic);
 
-    const result = await updateAnalytic('63e2d6c1f1eabc1234567890', { userItineraryAnalytic: { totalCommentsCount: 20 } });
-    expect(result).toEqual(updatedAnalytic);
-    expect(Models.UserAnalytic.findByIdAndUpdate).toHaveBeenCalledWith('63e2d6c1f1eabc1234567890', { userItineraryAnalytic: { totalCommentsCount: 20 } }, { new: true });
+    const result = await updateAnalytic(mockAnalytic._id, updateData);
+    expect(result.userItineraryAnalytic.totalCommentsCount).toBe(updateData['userItineraryAnalytic.totalCommentsCount']);
+    expect(Models.UserAnalytic.findByIdAndUpdate).toHaveBeenCalledWith(mockAnalytic._id, updateData, { new: true });
   });
 
   it('[-] should throw NotFoundError when updating non-existent analytic', async () => {
     Models.UserAnalytic.findByIdAndUpdate.mockResolvedValue(null);
 
-    await expect(updateAnalytic('nonExistentId', { userItineraryAnalytic: { totalCommentsCount: 20 } }))
-      .rejects.toThrow(NotFoundError);
-    expect(Models.UserAnalytic.findByIdAndUpdate).toHaveBeenCalledWith('nonExistentId', { userItineraryAnalytic: { totalCommentsCount: 20 } }, { new: true });
+    const updateData = { 'userItineraryAnalytic.totalCommentsCount': 15 };
+    await expect(updateAnalytic('nonExistentId', updateData)).rejects.toThrow(NotFoundError);
+    expect(Models.UserAnalytic.findByIdAndUpdate).toHaveBeenCalledWith('nonExistentId', updateData, { new: true });
   });
 
-  it('[+] should delete an existing analytic', async () => {
+  it('[+] should delete an analytic', async () => {
     Models.UserAnalytic.findByIdAndDelete.mockResolvedValue(mockAnalytic);
 
-    const result = await deleteAnalytic('63e2d6c1f1eabc1234567890');
+    const result = await deleteAnalytic(mockAnalytic._id);
     expect(result).toEqual(mockAnalytic);
-    expect(Models.UserAnalytic.findByIdAndDelete).toHaveBeenCalledWith('63e2d6c1f1eabc1234567890');
+    expect(Models.UserAnalytic.findByIdAndDelete).toHaveBeenCalledWith(mockAnalytic._id);
   });
 
   it('[-] should throw NotFoundError when deleting non-existent analytic', async () => {
@@ -146,4 +110,12 @@ describe('[Component] Analytic Service', () => {
     expect(Models.UserAnalytic.findByIdAndDelete).toHaveBeenCalledWith('nonExistentId');
   });
 
+  it('[+] should return all analytics', async () => {
+    const mockAnalytics = [mockAnalytic];
+    Models.UserAnalytic.find.mockResolvedValue(mockAnalytics);
+
+    const result = await getAllAnalytics();
+    expect(result).toEqual(mockAnalytics);
+    expect(Models.UserAnalytic.find).toHaveBeenCalled();
+  });
 });

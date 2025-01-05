@@ -4,6 +4,9 @@ import {
   getReportById,
   getReportByUserId,
   createReport,
+  updateReport,
+  deleteReport,
+  getAllReports
 } from '../services/reportService.js';
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 
@@ -63,4 +66,44 @@ describe('[Component] Report Service', () => {
     expect(Models.Report).toHaveBeenCalledWith(mockReport);
   });
 
+  it('[+] should update a report', async () => {
+    const updateData = { reason: 'Updated reason' };
+    Models.Report.findByIdAndUpdate.mockResolvedValue({ ...mockReport, ...updateData });
+
+    const result = await updateReport(mockReport._id, updateData);
+    expect(result.reason).toBe(updateData.reason);
+    expect(Models.Report.findByIdAndUpdate).toHaveBeenCalledWith(mockReport._id, updateData, { new: true });
+  });
+
+  it('[-] should throw NotFoundError when updating non-existent report', async () => {
+    Models.Report.findByIdAndUpdate.mockResolvedValue(null);
+
+    const updateData = { reason: 'Updated reason' };
+    await expect(updateReport('nonExistentId', updateData)).rejects.toThrow(NotFoundError);
+    expect(Models.Report.findByIdAndUpdate).toHaveBeenCalledWith('nonExistentId', updateData, { new: true });
+  });
+
+  it('[+] should delete a report', async () => {
+    Models.Report.findByIdAndDelete.mockResolvedValue(mockReport);
+
+    const result = await deleteReport(mockReport._id);
+    expect(result).toEqual(mockReport);
+    expect(Models.Report.findByIdAndDelete).toHaveBeenCalledWith(mockReport._id);
+  });
+
+  it('[-] should throw NotFoundError when deleting non-existent report', async () => {
+    Models.Report.findByIdAndDelete.mockResolvedValue(null);
+
+    await expect(deleteReport('nonExistentId')).rejects.toThrow(NotFoundError);
+    expect(Models.Report.findByIdAndDelete).toHaveBeenCalledWith('nonExistentId');
+  });
+
+  it('[+] should return all reports', async () => {
+    const mockReports = [mockReport];
+    Models.Report.find.mockResolvedValue(mockReports);
+
+    const result = await getAllReports();
+    expect(result).toEqual(mockReports);
+    expect(Models.Report.find).toHaveBeenCalled();
+  });
 });

@@ -32,16 +32,57 @@ export const getReportByUserId = async (userId) => {
 };
 
 export const createReport = async (reportData) => {
-    try {
-      const newReport = new Models.Report(reportData);
-      return await newReport.save();
-    } catch (error) {
-      throw new BadRequestError('Error creating report', error);
+  try {
+    const newReport = new Models.Report(reportData);
+    return await newReport.save();
+  } catch (error) {
+    throw new BadRequestError('Error creating report', error);
+  }
+};
+
+export const updateReport = async (id, reportData) => {
+  try {
+    const updatedReport = await Models.Report.findByIdAndUpdate(id, reportData, { new: true });
+    if (!updatedReport) {
+      throw new NotFoundError('Report not found');
     }
-  };
+    return updatedReport;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error updating report', error);
+  }
+};
+
+export const deleteReport = async (id) => {
+  try {
+    const deletedReport = await Models.Report.findByIdAndDelete(id);
+    if (!deletedReport) {
+      throw new NotFoundError('Report not found');
+    }
+    return deletedReport;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error deleting report', error);
+  }
+};
+
+export const getAllReports = async () => {
+  try {
+    return await Models.Report.find();
+  } catch (error) {
+    throw new BadRequestError('Error fetching all reports', error);
+  }
+};
 
 export default {
-    getReportById,
-    createReport,
-    getReportByUserId
-  };
+  getReportById,
+  getReportByUserId,
+  createReport,
+  updateReport,
+  deleteReport,
+  getAllReports
+};

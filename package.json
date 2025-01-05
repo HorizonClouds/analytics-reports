@@ -34,6 +34,7 @@
     "kafkajs": "^2.2.4",
     "mongoose": "^8.8.0",
     "node-cron": "^3.0.3",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   },

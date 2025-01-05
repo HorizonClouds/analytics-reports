@@ -9,6 +9,38 @@ servers:
 
 paths:
   # Rutas del servicio de Report
+  /reports:
+    get:
+      summary: Get all reports
+      tags:
+        - Reports
+      responses:
+        '200':
+          description: A list of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+    post:
+      summary: Create a new report
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewReport'
+      responses:
+        '201':
+          description: The created report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
   /reports/{id}:
     get:
       summary: Get a report by ID
@@ -27,31 +59,57 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          description: Report not found
+    put:
+      summary: Update a report by ID
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the report to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewReport'
+      responses:
+        '200':
+          description: The updated report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          description: Report not found
+    delete:
+      summary: Delete a report by ID
+      tags:
+        - Reports
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the report to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The deleted report
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  userId:
+                  message:
                     type: string
-                    example: '60c72b2f9b1d8f0d8d0b6f9e'
-                  type:
-                    type: string
-                    example: 'itinerary'
-                  reason:
-                    type: string
-                    example: 'Inappropriate content'
-                  createdAt:
-                    type: string
-                    format: date-time
-                    example: '2023-10-01T12:00:00Z'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    example: '2023-10-01T12:00:00Z'
-                  details:
-                    type: object
-                    properties:
-                      additionalInfo:
-                        type: string
-                        example: 'Some details'
+                    example: Report deleted successfully
         '404':
           description: Report not found
 
@@ -75,93 +133,9 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    userId:
-                      type: string
-                      example: '60c72b2f9b1d8f0d8d0b6f9e'
-                    type:
-                      type: string
-                      example: 'publication'
-                    reason:
-                      type: string
-                      example: 'Inappropriate content'
-                    createdAt:
-                      type: string
-                      format: date-time
-                      example: '2023-10-01T12:00:00Z'
-                    updatedAt:
-                      type: string
-                      format: date-time
-                      example: '2023-10-01T12:00:00Z'
-                    details:
-                      type: object
-                      properties:
-                        additionalInfo:
-                          type: string
-                          example: 'Some details'
+                  $ref: '#/components/schemas/Report'
         '404':
           description: No reports found for the user
-
-  /reports:
-    post:
-      summary: Create a new report
-      tags:
-        - Reports
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: string
-                  example: '60c72b2f9b1d8f0d8d0b6f9e'
-                type:
-                  type: string
-                  enum: ['publication', 'itinerary']
-                  example: 'itinerary'
-                reason:
-                  type: string
-                  example: 'Spam'
-                details:
-                  type: object
-                  properties:
-                    additionalInfo:
-                      type: string
-                      example: 'Some details'
-      responses:
-        '201':
-          description: The created report
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userId:
-                    type: string
-                    example: '60c72b2f9b1d8f0d8d0b6f9e'
-                  type:
-                    type: string
-                    example: 'itinerary'
-                  reason:
-                    type: string
-                    example: 'Spam'
-                  createdAt:
-                    type: string
-                    format: date-time
-                    example: '2023-10-01T12:00:00Z'
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    example: '2023-10-01T12:00:00Z'
-                  details:
-                    type: object
-                    properties:
-                      additionalInfo:
-                        type: string
-                        example: 'Some details'
 
   # Rutas del servicio de Analytics
   /analytics:
@@ -175,24 +149,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: Analytics fetched successfully
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserAnalytic'
-                  appCode:
-                    type: string
-                    example: OK
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAnalytic'
     post:
       summary: Create a new analytic
       tags:
@@ -209,22 +168,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: Analytic created successfully
-                  data:
-                    $ref: '#/components/schemas/UserAnalytic'
-                  appCode:
-                    type: string
-                    example: OK
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+                $ref: '#/components/schemas/UserAnalytic'
 
   /analytics/{id}:
     get:
@@ -244,22 +188,57 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/UserAnalytic'
+        '404':
+          description: Analytic not found
+    put:
+      summary: Update an analytic by ID
+      tags:
+        - Analytics
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the analytic to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAnalytic'
+      responses:
+        '200':
+          description: The updated analytic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAnalytic'
+        '404':
+          description: Analytic not found
+    delete:
+      summary: Delete an analytic by ID
+      tags:
+        - Analytics
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID of the analytic to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The deleted analytic
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  status:
-                    type: string
-                    example: success
                   message:
                     type: string
-                    example: Analytic fetched successfully
-                  data:
-                    $ref: '#/components/schemas/UserAnalytic'
-                  appCode:
-                    type: string
-                    example: OK
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+                    example: Analytic deleted successfully
         '404':
           description: Analytic not found
 
@@ -281,29 +260,87 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: Analytics fetched successfully
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserAnalytic'
-                  appCode:
-                    type: string
-                    example: OK
-                  timestamp:
-                    type: string
-                    example: '2023-10-01T12:00:00.000Z'
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAnalytic'
         '404':
           description: No analytics found for the user
 
+  /analytics/saveAnalytic/{id}:
+    post:
+      summary: Save or update an analytic
+      tags:
+        - Analytics
+      parameters:
+        - in: path
+          name: id
+          required: false
+          description: ID of the analytic to save or update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAnalytic'
+      responses:
+        '200':
+          description: The saved or updated analytic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAnalytic'
+
 components:
   schemas:
+    Report:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: '60c72b2f9b1d8f0d8d0b6f9e'
+        type:
+          type: string
+          example: 'itinerary'
+        reason:
+          type: string
+          example: 'Inappropriate content'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2023-10-01T12:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2023-10-01T12:00:00Z'
+        details:
+          type: object
+          properties:
+            additionalInfo:
+              type: string
+              example: 'Some details'
+
+    NewReport:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: '60c72b2f9b1d8f0d8d0b6f9e'
+        type:
+          type: string
+          enum: ['publication', 'itinerary']
+          example: 'itinerary'
+        reason:
+          type: string
+          example: 'Spam'
+        details:
+          type: object
+          properties:
+            additionalInfo:
+              type: string
+              example: 'Some details'
+
     UserAnalytic:
       type: object
       properties:
@@ -356,6 +393,7 @@ components:
           type: string
           format: date-time
           example: '2023-12-01T12:00:00.000Z'
+
     NewAnalytic:
       type: object
       properties:
