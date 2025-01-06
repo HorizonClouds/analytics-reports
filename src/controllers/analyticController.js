@@ -71,7 +71,7 @@ export const saveAnalytic = async (req, res, next) => {
 
 export const getAnalyticByUserId = async (req, res, next) => {
   try {
-    const { userId } = req.params; // Extrae userId de los parámetros de la solicitud
+    const userId = req.user?.userId || req.params?.userId;
     const analyticByUser = await analyticService.getAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
     res.sendSuccess(analyticByUser); // Devuelve la analítica encontrada
   } catch (error) {

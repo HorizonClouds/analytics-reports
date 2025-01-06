@@ -1,5 +1,6 @@
 import reportService from '../services/reportService.js';
 import { NotFoundError, ValidationError } from '../utils/customErrors.js';
+import { sendNotificationToKafka } from '../utils/notificationProducer.js';
 
 const removeMongoFields = (data) => {
   if (Array.isArray(data)) {
@@ -26,12 +27,35 @@ export const getReportById = async (req, res, next) => {
 
 export const createReport = async (req, res, next) => {
   try {
-    const newReport = await reportService.createReport(req.body);
-    res.sendSuccess(
-      removeMongoFields(newReport),
-      'Report created successfully',
-      201
-    );
+    const userId = req.user.userId;
+    // Validar que notificationData tenga el campo "type"
+    if (req.body && req.body.type === 'itinerary') {
+      
+      const transformedNotification = {
+        userId: req.body.userId, // ID del usuario
+        config: {
+          email: true, // Asumiendo que siempre se enviará por email
+        },
+        type: 'report', // Tipo de notificación
+        resourceId: req.body.resourceId, // ID del itinerario o publicación relacionado
+        notificationStatus: 'NOT SEEN',  // Estado de la notificación (puedes ajustarlo según tus necesidades)
+      };
+      // Lógica para enviar la notificación a Kafka
+      await sendNotificationToKafka(transformedNotification);
+      res.sendSuccess(
+        { message: 'Notification sent to Kafka successfully' },
+        'Report processing completed successfully',
+        200
+      );
+    } else {
+      // Lógica normal de creación del reporte
+      const newReport = await reportService.createReport(reportData);
+      res.sendSuccess(
+        removeMongoFields(newReport),
+        'Report created successfully',
+        201
+      );
+    }
   } catch (error) {
     next(error);
   }

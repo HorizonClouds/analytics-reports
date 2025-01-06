@@ -12,7 +12,6 @@ import errorHandler from './middlewares/errorHandler.js';
 import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
-import './utils/usingProducerExample.js';
 import logger from './utils/logger.js';
 import './cron/cron.js'; // Importa tu cron job
 import { updateAnalyticsJob } from './cron/cron.js'; // Asegúrate de importar la función correctamente

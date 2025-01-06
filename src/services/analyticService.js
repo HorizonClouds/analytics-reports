@@ -20,23 +20,133 @@ export const getAnalyticById = async (id) => {
     throw new BadRequestError('Error fetching analytic by ID', error);
   }
 };
-
-
+// Crear una nueva analítica
+export const createAnalytic = async (analyticData) => {
+  try {
+    //
+    const newAnalytic = new Models.UserAnalytic(analyticData);
+    logger.info("Creada analitica");
+    return await newAnalytic.save();
+  } catch (error) {
+    console.error('Error creating analytic:', error);
+    throw new BadRequestError('Error creating analytic', error);
+  }
+};
 export const getAnalyticByUserId = async (userId) => {
   try {
-    const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
-    if (analyticByUser.length === 0) {
-      throw new NotFoundError('Analytic not found for the specified userId');
+    // Busca analíticas existentes en la base de datos
+    const analyticByUser = await Models.UserAnalytic.findOne({ userId });
+
+    const itineraries = await itineraryService.fetchItinerariesByUser(userId);
+
+    const userItineraries = itineraries.filter(itinerary => itinerary.userId === userId);
+
+    if (!itineraries || itineraries.length === 0) {
+      throw new NotFoundError('No itineraries found');
     }
-    return analyticByUser;
+
+    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(userItineraries, userId);
+
+    const avgComments = totalCommentsCount / itineraries.length;
+    const averageReviewScore = calculateAverageReviewScore(userItineraries, userId);
+    const bestItinerary = getBestItinerary(userItineraries, userId);
+
+    // Prepara los datos analíticos calculados
+    const analyticData = {
+      userId,
+      userItineraryAnalytic: {
+        totalCommentsCount,
+        avgComments,
+        totalReviewsCount,
+        averageReviewScore,
+        bestItineraryByAvgReviewScore: bestItinerary?.itineraryId,
+      },
+    };
+
+    if (!analyticByUser) {
+      // Si no existe la analítica, crea una nueva
+      const newAnalytic = await createAnalytic(analyticData);
+      return newAnalytic;
+    } else {
+      // Si la analítica ya existe, actualízala
+      const updatedAnalytic = await updateAnalytic(analyticByUser._id, analyticData);
+      return updatedAnalytic;
+    }
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
     }
-    throw new BadRequestError('Error fetching analytic by userId', error);
+    throw new BadRequestError('Error fetching or updating analytic by userId', error);
   }
 };
 
+const calculateAverageScoreForItinerary = (itinerary, userId) => {
+  // Filtrar las reseñas de este itinerario para el usuario especificado
+  const userReviews = itinerary.reviews.filter(review => review.userId === userId);
+
+  // Si hay reseñas, calcular el promedio de las puntuaciones
+  if (userReviews.length > 0) {
+    const totalScore = userReviews.reduce((sum, review) => sum + review.score, 0);
+    return totalScore / userReviews.length;
+  }
+
+  // Si no hay reseñas, retornar 0 como puntuación
+  return 0;
+};
+
+const getBestItinerary = (itineraries, userId) => {
+  // Calcular la puntuación promedio para cada itinerario
+  const itinerariesWithScores = itineraries.map(itinerary => ({
+    itinerary,
+    averageScore: calculateAverageScoreForItinerary(itinerary, userId)
+  }));
+
+  // Ordenar los itinerarios por la puntuación promedio en orden descendente
+  const sortedItineraries = itinerariesWithScores.sort((a, b) => b.averageScore - a.averageScore);
+
+  // El primer itinerario es el mejor (con la mayor puntuación promedio)
+  return sortedItineraries[0]?.itinerary;
+};
+
+const calculateAverageReviewScore = (itineraries, userId) => {
+  let totalScore = 0;
+  let totalReviews = 0;
+
+  // Recorremos todos los itinerarios
+  itineraries.forEach(itinerary => {
+    // Filtramos las reseñas de este itinerario por el userId
+    const userReviews = itinerary.reviews.filter(review => review.userId === userId);
+
+    // Sumamos las puntuaciones de las reseñas del usuario
+    userReviews.forEach(review => {
+      totalScore += review.score || 0;
+      totalReviews += 1; // Contamos cuántas reseñas tiene este usuario
+    });
+  });
+
+  // Calculamos el promedio de la puntuación de las reseñas
+  const averageReviewScore = totalReviews > 0 ? totalScore / totalReviews : 0;
+
+  return averageReviewScore;
+};
+
+const countCommentsAndReviews = (itineraries, userId) => {
+  let totalCommentsCount = 0;
+  let totalReviewsCount = 0;
+
+  // Recorremos todos los itinerarios del usuario
+  itineraries.forEach((itinerary) => {
+    // Filtrar los comentarios del itinerario por el userId
+    const userComments = itinerary.comments.filter(comment => comment.userId === userId);
+    totalCommentsCount += userComments.length; // Sumar los comentarios de este itinerario
+
+    // Filtrar las reseñas del itinerario por el userId
+    const userReviews = itinerary.reviews.filter(review => review.userId === userId);
+    totalReviewsCount += userReviews.length; // Sumar las reseñas de este itinerario
+  });
+
+  return { totalCommentsCount, totalReviewsCount };
+};
 
 //Obtener todas las notificaciones
 export const getAllAnalytics = async () => {
@@ -95,17 +205,6 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
   }
 };
 
-// Crear una nueva analítica
-export const createAnalytic = async (analyticData) => {
-  try {
-    const newAnalytic = new Models.UserAnalytic(analyticData);
-    logger.info("Creada analitica");
-    return await newAnalytic.save();
-  } catch (error) {
-    console.error('Error creating analytic:', error);
-    throw new BadRequestError('Error creating analytic', error);
-  }
-};
 
 // Guardar o actualizar analítica
 export const saveAnalytic = async (id, analyticData) => {
@@ -120,7 +219,7 @@ export const saveAnalytic = async (id, analyticData) => {
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
         if (existingAnalytic.analysisDate < oneDayAgo) {
-        
+
           return await updateAnalytic(id, analyticData);
         } else {
           logger.info('No se actualizó la analítica porque no ha pasado suficiente tiempo');
