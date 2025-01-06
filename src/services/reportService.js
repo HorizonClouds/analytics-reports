@@ -1,5 +1,6 @@
 import Models from '../models/reportModel.js';
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
+import logger from '../utils/logger.js';
 
 export const getReportById = async (id) => {
   try {

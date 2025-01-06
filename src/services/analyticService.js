@@ -3,6 +3,7 @@ import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 import dotenv from 'dotenv'; // Import dotenv for environment variables
 dotenv.config(); // Load environment variables
 import mongoose from 'mongoose';
+import logger from '../utils/logger.js';
 
 
 export const getAnalyticById = async (id) => {
@@ -59,12 +60,12 @@ export const getItineraryAnalytics = async (filters = {}) => {
 
 export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
-    console.log('ID recibido:', id); // Imprime el id recibido para depuración
+    logger.info('ID recibido:', id); // Imprime el id recibido para depuración
 
     // Verifica si el id es un ObjectId válido
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       // Si el id no es válido, genera uno nuevo
-      console.log('ID no válido o no proporcionado, generando uno nuevo');
+      logger.info('ID no válido o no proporcionado, generando uno nuevo');
       id = new mongoose.Types.ObjectId();
     }
 
@@ -98,6 +99,7 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
 export const createAnalytic = async (analyticData) => {
   try {
     const newAnalytic = new Models.UserAnalytic(analyticData);
+    logger.info("Creada analitica");
     return await newAnalytic.save();
   } catch (error) {
     console.error('Error creating analytic:', error);
@@ -121,7 +123,7 @@ export const saveAnalytic = async (id, analyticData) => {
         
           return await updateAnalytic(id, analyticData);
         } else {
-          console.log('No se actualizó la analítica porque no ha pasado suficiente tiempo');
+          logger.info('No se actualizó la analítica porque no ha pasado suficiente tiempo');
           return existingAnalytic;
         }
       } else {
@@ -130,7 +132,7 @@ export const saveAnalytic = async (id, analyticData) => {
     } else {
       // Si no hay un `id` válido, creamos una nueva analítica
       const newAnalytic = await createAnalytic(analyticData);
-      console.log('Nueva analítica creada');
+      logger.info('Nueva analítica creada');
       return newAnalytic;
     }
   } catch (error) {

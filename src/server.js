@@ -13,7 +13,7 @@ import { BadJsonError } from './utils/customErrors.js';
 import connectDB from './db/connection.js';
 import cors from 'cors'; // Import CORS middleware
 import './utils/usingProducerExample.js';
-import './utils/logger.js';
+import logger from './utils/logger.js';
 import './cron/cron.js'; // Importa tu cron job
 import { updateAnalyticsJob } from './cron/cron.js'; // Asegúrate de importar la función correctamente
 
@@ -81,7 +81,7 @@ connectDB()
       logger.info(`Server is running on http://localhost:${port}`);
       logger.info(`API documentation is available at http://localhost:${port}/api-docs`);
       logger.debug('Debugging information');
-      logger.info('Service has started successfully');
+      logger.info('Service has started successfully reports');
     });
   })
   .catch((error) => {
