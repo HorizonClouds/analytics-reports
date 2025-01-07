@@ -36,7 +36,7 @@ export const createReport = async (req, res, next) => {
         config: {
           email: true, // Asumiendo que siempre se enviará por email
         },
-        type: 'report', // Tipo de notificación
+        type: req.body.type, // Tipo de notificación
         resourceId: req.body.resourceId, // ID del itinerario o publicación relacionado
         notificationStatus: 'NOT SEEN',  // Estado de la notificación (puedes ajustarlo según tus necesidades)
       };
@@ -47,14 +47,13 @@ export const createReport = async (req, res, next) => {
         'Report processing completed successfully',
         200
       );
-    } else {
-      // Lógica normal de creación del reporte
-      const newReport = await reportService.createReport(reportData);
+      const newReport = await reportService.createReport(req.body);
       res.sendSuccess(
         removeMongoFields(newReport),
         'Report created successfully',
         201
       );
+      return newReport;
     }
   } catch (error) {
     next(error);
