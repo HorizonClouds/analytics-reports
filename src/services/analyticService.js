@@ -174,17 +174,6 @@ export const getAnalyticByUserId = async (userId) => {
   }
 };
 
-// Leer análisis de itinerarios (con filtros opcionales)
-export const getItineraryAnalytics = async (filters = {}) => {
-  try {
-    const { numberOfItineraryComments, commentsPerItinerary, numberOfItineraryRatings } = filters;
-    return await Models.ItineraryAnalytic.find({ numberOfItineraryComments, commentsPerItinerary }, { numberOfItineraryRatings: 0, commentsPerItinerary: 0 }); //{numberOfItineraryRatings:1, commentsPerItinerary:1}
-  } catch (error) {
-    console.error('Error fetching itinerary analytics:', error);
-    throw new BadRequestError('Error fetching itinerary analytics', error);
-  }
-};
-
 export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
     logger.info('ID recibido:', id); // Imprime el id recibido para depuración
@@ -297,7 +286,6 @@ export default {
   getAllAnalytics,
   createAnalytic,
   createAnalyticByUserId,
-  getItineraryAnalytics,
   getOrCreateAnalyticById,
   getAnalyticByUserId,
   updateAnalytic,

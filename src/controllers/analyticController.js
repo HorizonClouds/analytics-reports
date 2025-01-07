@@ -97,16 +97,6 @@ export const getAllAnalytics = async (req, res, next) => {
   }
 };
 
-export const getItineraryAnalytics = async (req, res, next) => {
-  try {
-    const filters = req.query; // Filtros opcionales enviados en la solicitud
-    const analytics = await analyticService.getItineraryAnalytics(filters);
-    res.sendSuccess(analytics);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getOrCreateAnalytic = async (req, res, next) => {
   try {
     const { id } = req.params;
