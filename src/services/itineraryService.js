@@ -12,7 +12,11 @@ export const itineraryService = {
             }
 
             // Obtener los itinerarios desde el microservicio
-            const response = await axios.get(`${itinerariesServiceUrl}/api/v1/itineraries`);
+            const response = await axios.get(`${itinerariesServiceUrl}/api/v1/itineraries`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });            
             // Filtrar los itinerarios que coinciden con el userId
             const itineraries = response.data.data;
             // Si no se encuentran itinerarios, podemos devolver null o un mensaje apropiado

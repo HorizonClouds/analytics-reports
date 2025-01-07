@@ -4,6 +4,7 @@ import dotenv from 'dotenv'; // Import dotenv for environment variables
 dotenv.config(); // Load environment variables
 import mongoose from 'mongoose';
 import logger from '../utils/logger.js';
+import { itineraryService } from '../services/itineraryService.js';
 
 
 export const getAnalyticById = async (id) => {
@@ -18,6 +19,20 @@ export const getAnalyticById = async (id) => {
       throw error;
     }
     throw new BadRequestError('Error fetching analytic by ID', error);
+  }
+};
+export const getAnalyticByUserId = async (userId) => {
+  try {
+    const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
+    if (analyticByUser.length === 0) {
+      throw new NotFoundError('Analytic not found for the specified userId');
+    }
+    return analyticByUser;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching analytic by userId', error);
   }
 };
 // Crear una nueva analítica
@@ -282,6 +297,7 @@ export default {
   createAnalyticByUserId,
   getItineraryAnalytics,
   getOrCreateAnalyticById,
+  getAnalyticByUserId,
   updateAnalytic,
   deleteAnalytic,
   saveAnalytic

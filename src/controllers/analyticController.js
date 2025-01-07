@@ -79,6 +79,15 @@ export const createAnalyticByUserId = async (req, res, next) => {
   }
 };
 
+export const getAnalyticByUserId = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const analyticByUser = await analyticService.getAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
+    res.sendSuccess(analyticByUser); // Devuelve la analítica encontrada
+  } catch (error) {
+    next(error);
+  }
+};
 export const getAllAnalytics = async (req, res, next) => {
   try {
     const analytics = await analyticService.getAllAnalytics();
