@@ -32,7 +32,7 @@ export const createAnalytic = async (analyticData) => {
     throw new BadRequestError('Error creating analytic', error);
   }
 };
-export const getAnalyticByUserId = async (userId) => {
+export const createAnalyticByUserId = async (userId) => {
   try {
     // Busca analíticas existentes en la base de datos
     const analyticByUser = await Models.UserAnalytic.findOne({ userId });
@@ -279,7 +279,7 @@ export default {
   getAnalyticById,
   getAllAnalytics,
   createAnalytic,
-  getAnalyticByUserId,
+  createAnalyticByUserId,
   getItineraryAnalytics,
   getOrCreateAnalyticById,
   updateAnalytic,

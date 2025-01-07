@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import Models from '../models/analyticModel.js';
 import {
   getAnalyticById,
-  getAnalyticByUserId,
+  createAnalyticByUserId,
   createAnalytic,
   updateAnalytic,
   deleteAnalytic,
@@ -55,7 +55,7 @@ describe('[Component] Analytic Service', () => {
     const mockAnalytics = [mockAnalytic];
     Models.UserAnalytic.find.mockResolvedValue(mockAnalytics);
 
-    const result = await getAnalyticByUserId('63e2d6c1f1eabc1234567891');
+    const result = await createAnalyticByUserId('63e2d6c1f1eabc1234567891');
     expect(result).toEqual(mockAnalytics);
     expect(Models.UserAnalytic.find).toHaveBeenCalledWith({ userId: '63e2d6c1f1eabc1234567891' });
   });
@@ -63,7 +63,7 @@ describe('[Component] Analytic Service', () => {
   it('[-] should throw NotFoundError for userId with no analytics', async () => {
     Models.UserAnalytic.find.mockResolvedValue([]);
 
-    await expect(getAnalyticByUserId('nonExistentUserId')).rejects.toThrow('Analytic not found for the specified userId');
+    await expect(createAnalyticByUserId('nonExistentUserId')).rejects.toThrow('Analytic not found for the specified userId');
     expect(Models.UserAnalytic.find).toHaveBeenCalledWith({ userId: 'nonExistentUserId' });
   });
 

@@ -14,7 +14,7 @@ router.get('/v1/analytics', analyticController.getAllAnalytics);
 router.post('/v1/analytics', checkAuth(), validateAnalyticBody, handleValidationErrors, analyticController.createAnalytic);
 
 //le meto el checkAuth como validador e inyecta el req.user.userId
-router.get('/v1/analytics/user/:userId?', checkAuth(), validateFilters, handleValidationErrors, analyticController.getAnalyticByUserId);
+router.get('/v1/analytics/user/:userId?', checkAuth(), validateFilters, handleValidationErrors, analyticController.createAnalyticByUserId);
 
 router.put('/v1/analytics/:id', checkAuth(), validateId, validateAnalyticBody, handleValidationErrors, analyticController.updateAnalytic);
 router.delete('/v1/analytics/:id', checkAuth(), validateId, handleValidationErrors, analyticController.deleteAnalytic);

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
   getAnalyticById,
-  getAnalyticByUserId,
+  createAnalyticByUserId,
   getAllAnalytics,
   createAnalytic,
   updateAnalytic,
@@ -95,13 +95,13 @@ describe('[Integration][Service] Analytic Tests', () => {
   });
 
   it('[+] should GET analytics by userId', async () => {
-    const result = await getAnalyticByUserId(exampleAnalytic.userId.toString());
+    const result = await createAnalyticByUserId(exampleAnalytic.userId.toString());
     expect(result).toHaveLength(1);
     expect(result[0].userId.toString()).toBe(exampleAnalytic.userId.toString());
   });
 
   it('[-] should return NOT FOUND for analytics by non-existent userId', async () => {
-    await expect(getAnalyticByUserId('nonExistentUser')).rejects.toThrow('Error fetching analytic by userId');
+    await expect(createAnalyticByUserId('nonExistentUser')).rejects.toThrow('Error fetching analytic by userId');
   });
 
   it('[+] should GET all analytics', async () => {
