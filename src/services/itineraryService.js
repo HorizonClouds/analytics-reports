@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getServiceUrl } from '../utils/infrastructure.js';
+import { getServiceUrl } from '../utils/infraestructure.js';
 import logger from '../utils/logger.js';
 
 export const itineraryService = {

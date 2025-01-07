@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, vi, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
   getAnalyticById,
+  getAnalyticByUserId,
   createAnalyticByUserId,
   getAllAnalytics,
   createAnalytic,
@@ -11,6 +12,7 @@ import {
   getOrCreateAnalyticById
 } from '../services/analyticService.js';
 import Models from '../models/analyticModel.js';
+import { itineraryService } from '../services/itineraryService.js';
 
 const exampleAnalytic = {
   userId: new mongoose.Types.ObjectId(),
@@ -79,6 +81,41 @@ describe('[Integration][Service] Analytic Tests', () => {
     expect(dbAnalytic.userId.toString()).toBe(anotherAnalytic.userId.toString());
   });
 
+  it('[+] should CREATE an analytic by userId', async () => {
+    const itineraries = [
+      {
+        userId: exampleAnalytic.userId,
+        comments: [{ userId: exampleAnalytic.userId }, { userId: exampleAnalytic.userId }],
+        reviews: [{ userId: exampleAnalytic.userId, score: 4 }, { userId: exampleAnalytic.userId, score: 5 }],
+        _id: new mongoose.Types.ObjectId()
+      }
+    ];
+
+    vi.spyOn(itineraryService, 'fetchItinerariesByUser').mockResolvedValue(itineraries);
+
+    const result = await createAnalyticByUserId(exampleAnalytic.userId.toString());
+
+    const totalCommentsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.comments.length, 0);
+    const totalReviewsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.reviews.length, 0);
+    const avgComments = totalCommentsCount / itineraries.length;
+    const averageReviewScore = itineraries.reduce((sum, itinerary) => sum + itinerary.reviews.reduce((scoreSum, review) => scoreSum + review.score, 0), 0) / totalReviewsCount;
+    const bestItinerary = itineraries.reduce((best, itinerary) => {
+      const avgScore = itinerary.reviews.reduce((scoreSum, review) => scoreSum + review.score, 0) / itinerary.reviews.length;
+      return avgScore > best.avgScore ? { itineraryId: itinerary._id, avgScore } : best;
+    }, { avgScore: 0 }).itineraryId;
+
+    expect(result.userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(result.userItineraryAnalytic.totalCommentsCount).toBe(totalCommentsCount);
+    expect(result.userItineraryAnalytic.avgComments).toBe(avgComments);
+    expect(result.userItineraryAnalytic.totalReviewsCount).toBe(totalReviewsCount);
+    expect(result.userItineraryAnalytic.averageReviewScore).toBe(averageReviewScore);
+    expect(result.userItineraryAnalytic.bestItineraryByAvgReviewScore.toString()).toBe(bestItinerary.toString());
+
+    const dbAnalytic = await Models.UserAnalytic.findById(result._id);
+    expect(dbAnalytic).not.toBeNull();
+    expect(dbAnalytic.userId.toString()).toBe(exampleAnalytic.userId.toString());
+  });
+
   it('[+] should GET an analytic by ID', async () => {
     const result = await getAnalyticById(analyticId);
     expect(result._id.toString()).toBe(analyticId);
@@ -95,13 +132,13 @@ describe('[Integration][Service] Analytic Tests', () => {
   });
 
   it('[+] should GET analytics by userId', async () => {
-    const result = await createAnalyticByUserId(exampleAnalytic.userId.toString());
+    const result = await getAnalyticByUserId(exampleAnalytic.userId.toString());
     expect(result).toHaveLength(1);
     expect(result[0].userId.toString()).toBe(exampleAnalytic.userId.toString());
   });
 
   it('[-] should return NOT FOUND for analytics by non-existent userId', async () => {
-    await expect(createAnalyticByUserId('nonExistentUser')).rejects.toThrow('Error fetching analytic by userId');
+    await expect(getAnalyticByUserId('nonExistentUser')).rejects.toThrow('Error fetching analytic by userId');
   });
 
   it('[+] should GET all analytics', async () => {
@@ -172,4 +209,5 @@ describe('[Integration][Service] Analytic Tests', () => {
     expect(result._id.toString()).toBe(analyticId);
     expect(result.userId.toString()).toBe(exampleAnalytic.userId.toString());
   });
+
 });

@@ -13,16 +13,19 @@ import Models from '../models/reportModel.js';
 import { NotFoundError, BadRequestError } from '../utils/customErrors.js';
 
 const exampleReport = {
-  userId: new mongoose.Types.ObjectId(),
-  type: 'publication',
-  reason: 'Test reason'
+  userId: new mongoose.Types.ObjectId(), // ID del usuario que reporta
+  type: 'publication',                  // Tipo de recurso reportado
+  resourceId: new mongoose.Types.ObjectId(), // ID de la publicación asociada
+  reason: 'Test reason'                 // Razón del reporte
 };
 
 const anotherReport = {
-  userId: new mongoose.Types.ObjectId(),
-  type: 'itinerary',
-  reason: 'Another test reason'
+  userId: new mongoose.Types.ObjectId(), // ID de otro usuario que reporta
+  type: 'itinerary',                    // Tipo de recurso reportado
+  resourceId: new mongoose.Types.ObjectId(), // ID del itinerario asociado
+  reason: 'Another test reason'         // Razón alternativa del reporte
 };
+
 
 describe('[Integration][Service] Report Tests', () => {
   let reportId;
@@ -131,4 +134,5 @@ describe('[Integration][Service] Report Tests', () => {
     };
     await expect(createReport(invalidReport)).rejects.toThrow();
   });
+
 });

@@ -7,94 +7,6 @@ import logger from '../utils/logger.js';
 import { itineraryService } from '../services/itineraryService.js';
 
 
-export const getAnalyticById = async (id) => {
-  try {
-    const analytic = await Models.UserAnalytic.findById(id);
-    if (!analytic) {
-      throw new NotFoundError('Analytic not found');
-    }
-    return analytic;
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new BadRequestError('Error fetching analytic by ID', error);
-  }
-};
-export const getAnalyticByUserId = async (userId) => {
-  try {
-    const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
-    if (analyticByUser.length === 0) {
-      throw new NotFoundError('Analytic not found for the specified userId');
-    }
-    return analyticByUser;
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new BadRequestError('Error fetching analytic by userId', error);
-  }
-};
-// Crear una nueva analítica
-export const createAnalytic = async (analyticData) => {
-  try {
-    //
-    const newAnalytic = new Models.UserAnalytic(analyticData);
-    logger.info("Creada analitica");
-    return await newAnalytic.save();
-  } catch (error) {
-    console.error('Error creating analytic:', error);
-    throw new BadRequestError('Error creating analytic', error);
-  }
-};
-export const createAnalyticByUserId = async (userId) => {
-  try {
-    // Busca analíticas existentes en la base de datos
-    const analyticByUser = await Models.UserAnalytic.findOne({ userId });
-
-    const itineraries = await itineraryService.fetchItinerariesByUser(userId);
-
-    const userItineraries = itineraries.filter(itinerary => itinerary.userId === userId);
-
-    if (!itineraries || itineraries.length === 0) {
-      throw new NotFoundError('No itineraries found');
-    }
-
-    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(userItineraries, userId);
-
-    const avgComments = totalCommentsCount / itineraries.length;
-    const averageReviewScore = calculateAverageReviewScore(userItineraries, userId);
-    const bestItinerary = getBestItinerary(userItineraries, userId);
-
-    // Prepara los datos analíticos calculados
-    const analyticData = {
-      userId,
-      userItineraryAnalytic: {
-        totalCommentsCount,
-        avgComments,
-        totalReviewsCount,
-        averageReviewScore,
-        bestItineraryByAvgReviewScore: bestItinerary?.itineraryId,
-      },
-    };
-
-    if (!analyticByUser) {
-      // Si no existe la analítica, crea una nueva
-      const newAnalytic = await createAnalytic(analyticData);
-      return newAnalytic;
-    } else {
-      // Si la analítica ya existe, actualízala
-      const updatedAnalytic = await updateAnalytic(analyticByUser._id, analyticData);
-      return updatedAnalytic;
-    }
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new BadRequestError('Error fetching or updating analytic by userId', error);
-  }
-};
-
 const calculateAverageScoreForItinerary = (itinerary, userId) => {
   // Filtrar las reseñas de este itinerario para el usuario especificado
   const userReviews = itinerary.reviews.filter(review => review.userId === userId);
@@ -163,12 +75,102 @@ const countCommentsAndReviews = (itineraries, userId) => {
   return { totalCommentsCount, totalReviewsCount };
 };
 
+// Crear una analítica
+export const createAnalytic = async (analyticData) => {
+  try {
+    //
+    const newAnalytic = new Models.UserAnalytic(analyticData);
+    logger.info("Creada analitica");
+    return await newAnalytic.save();
+  } catch (error) {
+    console.error('Error creating analytic:', error);
+    throw new BadRequestError('Error creating analytic', error);
+  }
+};
+export const createAnalyticByUserId = async (userId) => {
+  try {
+    // Busca analíticas existentes en la base de datos
+    const analyticByUser = await Models.UserAnalytic.findOne({ userId });
+
+    const itineraries = await itineraryService.fetchItinerariesByUser(userId);
+
+    const userItineraries = itineraries.filter(itinerary => itinerary.userId === userId);
+
+    if (!itineraries || itineraries.length === 0) {
+      throw new NotFoundError('No itineraries found');
+    }
+
+    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(userItineraries, userId);
+
+    const avgComments = totalCommentsCount / itineraries.length;
+    const averageReviewScore = calculateAverageReviewScore(userItineraries, userId);
+    const bestItinerary = getBestItinerary(userItineraries, userId);
+
+    // Prepara los datos analíticos calculados
+    const analyticData = {
+      userId,
+      userItineraryAnalytic: {
+        totalCommentsCount,
+        avgComments,
+        totalReviewsCount,
+        averageReviewScore,
+        bestItineraryByAvgReviewScore: bestItinerary?.itineraryId,
+      },
+    };
+
+    if (!analyticByUser) {
+      // Si no existe la analítica, crea una nueva
+      const newAnalytic = await createAnalytic(analyticData);
+      return newAnalytic;
+    } else {
+      // Si la analítica ya existe, actualízala
+      const updatedAnalytic = await updateAnalytic(analyticByUser._id, analyticData);
+      return updatedAnalytic;
+    }
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching or updating analytic by userId', error);
+  }
+};
+
+
 //Obtener todas las notificaciones
 export const getAllAnalytics = async () => {
   try {
     return await Models.UserAnalytic.find({});
   } catch (error) {
     throw new BadRequestError('Error fetching analytics', error);
+  }
+};
+
+export const getAnalyticById = async (id) => {
+  try {
+    const analytic = await Models.UserAnalytic.findById(id);
+    if (!analytic) {
+      throw new NotFoundError('Analytic not found');
+    }
+    return analytic;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching analytic by ID', error);
+  }
+};
+export const getAnalyticByUserId = async (userId) => {
+  try {
+    const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
+    if (analyticByUser.length === 0) {
+      throw new NotFoundError('Analytic not found for the specified userId');
+    }
+    return analyticByUser;
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new BadRequestError('Error fetching analytic by userId', error);
   }
 };
 

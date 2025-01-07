@@ -16,10 +16,10 @@ const reportSchema = new mongoose.Schema({
     reason: { type: String, required: true }, // Razón del reporte
   }, {
     timestamps: true, // Añade automáticamente createdAt y updatedAt
-  });
+});
 
 
-  const Report = mongoose.model('Report', reportSchema);
+const Report = mongoose.model('Report', reportSchema);
 
 export default {
   Report
