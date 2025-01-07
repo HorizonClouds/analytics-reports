@@ -82,18 +82,34 @@ describe('[Integration][Service] Analytic Tests', () => {
   });
 
   it('[+] should CREATE an analytic by userId', async () => {
+    const userId = exampleAnalytic.userId.toString();
     const itineraries = [
       {
-        userId: exampleAnalytic.userId,
-        comments: [{ userId: exampleAnalytic.userId }, { userId: exampleAnalytic.userId }],
-        reviews: [{ userId: exampleAnalytic.userId, score: 4 }, { userId: exampleAnalytic.userId, score: 5 }],
+        userId: userId,
+        name: 'Adventure in the Andes',
+        description: 'A thrilling 5-day adventure across the Andes.',
+        startDate: new Date('2025-03-01'),
+        endDate: new Date('2025-03-05'),
+        activities: [
+          { title: 'Mountain Hike', duration: 5, location: 'Andes' },
+          { title: 'Camping', duration: 12, location: 'Base Camp' },
+        ],
+        comments: [
+          { userId: userId, message: 'Amazing trip!', date: new Date() },
+          { userId: userId, message: 'Loved it!', date: new Date() }
+        ],
+        reviews: [
+          { userId: userId, score: 4, comment: 'Great experience!' },
+          { userId: userId, score: 5, comment: 'Fantastic!' }
+        ],
+        category: 'Adventure',
         _id: new mongoose.Types.ObjectId()
       }
     ];
 
     vi.spyOn(itineraryService, 'fetchItinerariesByUser').mockResolvedValue(itineraries);
 
-    const result = await createAnalyticByUserId(exampleAnalytic.userId.toString());
+    const result = await createAnalyticByUserId(userId);
 
     const totalCommentsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.comments.length, 0);
     const totalReviewsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.reviews.length, 0);
@@ -104,7 +120,7 @@ describe('[Integration][Service] Analytic Tests', () => {
       return avgScore > best.avgScore ? { itineraryId: itinerary._id, avgScore } : best;
     }, { avgScore: 0 }).itineraryId;
 
-    expect(result.userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(result.userId.toString()).toBe(userId);
     expect(result.userItineraryAnalytic.totalCommentsCount).toBe(totalCommentsCount);
     expect(result.userItineraryAnalytic.avgComments).toBe(avgComments);
     expect(result.userItineraryAnalytic.totalReviewsCount).toBe(totalReviewsCount);
@@ -113,7 +129,7 @@ describe('[Integration][Service] Analytic Tests', () => {
 
     const dbAnalytic = await Models.UserAnalytic.findById(result._id);
     expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(dbAnalytic.userId.toString()).toBe(userId);
   });
 
   it('[+] should GET an analytic by ID', async () => {
