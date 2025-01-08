@@ -4,7 +4,8 @@
 import mongoose from 'mongoose';
 
 const userAnalyticSchema = new mongoose.Schema({
-  userId: { type: String, required: true }, // Referencia al usuario 
+  userId: { type: String, required: true }, // Referencia al usuario
+  resourceId: { type: String, required: true },
   userItineraryAnalytic: {
     totalCommentsCount: { type: Number, required: true, min: 0 },
     avgComments: { type: Number, required: true, min: 0 },

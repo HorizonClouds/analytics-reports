@@ -7,217 +7,66 @@ import logger from '../utils/logger.js';
 import { itineraryService } from '../services/itineraryService.js';
 
 const calculateAverageScoreForItinerary = (itinerary, userId) => {
-  const userReviews = itinerary.reviews.filter(review => review.userId.toString() === userId.toString());
-
-  if (userReviews.length === 0) return 0; // Sin reseñas, la puntuación promedio es 0
-
-  const totalScore = userReviews.reduce((sum, review) => sum + review.score, 0);
+  const userReviews = itinerary.reviews?.filter(review => review?.userId?.toString() === userId?.toString()) || [];
+  if (!userReviews.length) return 0;
+  const totalScore = userReviews.reduce((sum, review) => sum + (Number(review.score) || 0), 0);
   return totalScore / userReviews.length;
 };
 
-const getBestItinerary = (itineraries, userId) => {
-  console.log('Getting best itinerary for userId:', userId);
-
-  // Verificar que tenemos datos válidos
-  if (!itineraries?.data || !Array.isArray(itineraries.data)) {
-    console.error('No valid itineraries data:', itineraries);
+const getBestItinerary = (itineraries) => {
+  if (!Array.isArray(itineraries?.data)) {
+    console.error('Invalid itineraries data:', itineraries);
     return null;
   }
 
-  // Función helper para calcular el score promedio de un itinerario
-  const calculateAverageScoreForItinerary = (itinerary, userId) => {
-    if (!itinerary.reviews || !Array.isArray(itinerary.reviews)) {
-      console.log('No reviews found for itinerary:', itinerary._id);
-      return 0;
-    }
+  // Calcular la puntuación promedio sin importar el usuario
+  const itinerariesWithScores = itineraries.data.map(itinerary => ({
+    itinerary,
+    averageScore: calculateAverageScoreForItinerary(itinerary),
+  }));
 
-    const userReviews = itinerary.reviews.filter(review => {
-      if (!review || !review.userId) return false;
-      return review.userId === userId;
-    });
-
-    console.log('User reviews for itinerary', itinerary._id, ':', userReviews.length);
-
-    if (userReviews.length === 0) return 0;
-
-    const totalScore = userReviews.reduce((sum, review) => {
-      const score = Number(review.score) || 0;
-      console.log('Adding score:', score);
-      return sum + score;
-    }, 0);
-
-    const averageScore = totalScore / userReviews.length;
-    console.log('Average score for itinerary', itinerary._id, ':', averageScore);
-
-    return averageScore;
-  };
-
-  // Calcular la puntuación promedio para cada itinerario
-  const itinerariesWithScores = itineraries.data.map(itinerary => {
-    const averageScore = calculateAverageScoreForItinerary(itinerary, userId);
-    console.log('Calculated score for itinerary:', {
-      itineraryId: itinerary._id,
-      averageScore
-    });
-
-    return {
-      itinerary,
-      averageScore: averageScore || 0 // Asignar 0 si no hay puntuación válida
-    };
-  });
-
-  console.log('All itineraries with scores:', 
-    itinerariesWithScores.map(({ itinerary, averageScore }) => ({
-      id: itinerary._id,
-      score: averageScore
-    }))
-  );
-
-  // Ordenar los itinerarios por la puntuación promedio en orden descendente
+  // Ordenar itinerarios por puntuación promedio de mayor a menor
   const sortedItineraries = itinerariesWithScores.sort((a, b) => b.averageScore - a.averageScore);
-
-  console.log('Sorted itineraries:', 
-    sortedItineraries.map(({ itinerary, averageScore }) => ({
-      id: itinerary._id,
-      score: averageScore
-    }))
-  );
-
-  // El primer itinerario es el mejor (con la mayor puntuación promedio)
-  const bestItinerary = sortedItineraries[0]?.itinerary || null;
-
-  console.log('Best itinerary found:', bestItinerary ? {
-    id: bestItinerary._id,
-    score: sortedItineraries[0].averageScore
-  } : 'No valid itinerary found');
-
-  return bestItinerary;
+  return sortedItineraries[0]?.itinerary || null;
 };
 
-const calculateAverageReviewScore = (itineraries, userId) => {
-  let totalScore = 0;
-  let totalReviews = 0;
 
-  // Verificar que tenemos datos válidos
-  if (!itineraries?.data || !Array.isArray(itineraries.data)) {
-    console.error('No valid itineraries data:', itineraries);
+const calculateAverageReviewScore = (itineraries) => {
+  if (!Array.isArray(itineraries?.data)) {
+    console.error('Invalid itineraries data:', itineraries);
     return 0;
   }
 
-  console.log('Calculating average review score for userId:', userId);
+  let totalScore = 0, totalReviews = 0;
 
-  // Recorremos todos los itinerarios
   itineraries.data.forEach(itinerary => {
-    // Verificar que tenemos un array de reviews
-    const reviews = Array.isArray(itinerary.reviews) ? itinerary.reviews : [];
-    
-    console.log('Processing itinerary:', itinerary._id);
-    console.log('Reviews available:', reviews.length);
-
-    // Filtramos las reseñas de este itinerario por el userId
-    const userReviews = reviews.filter(review => {
-      if (!review || !review.userId) return false;
-
-      console.log('Comparing review:', {
-        reviewUserId: review.userId,
-        userId: userId,
-        score: review.score,
-        isMatch: review.userId === userId
-      });
-
-      return review.userId === userId;
-    });
-
-    console.log('User reviews found:', userReviews.length);
-
-    // Sumamos las puntuaciones de las reseñas del usuario
-    userReviews.forEach(review => {
-      const score = Number(review.score) || 0;
-      console.log('Adding score:', score);
-      totalScore += score;
-      totalReviews += 1;
-    });
+    // Contar todas las reseñas sin filtrar por usuario
+    totalScore += itinerary.reviews?.reduce((sum, review) => sum + (Number(review.score) || 0), 0) || 0;
+    totalReviews += itinerary.reviews?.length || 0;
   });
 
-  // Calculamos el promedio de la puntuación de las reseñas
-  const averageReviewScore = totalReviews > 0 ? totalScore / totalReviews : 0;
-
-  console.log('Final calculation:', {
-    totalScore,
-    totalReviews,
-    averageReviewScore
-  });
-
-  return averageReviewScore;
+  return totalReviews ? totalScore / totalReviews : 0;
 };
-const countCommentsAndReviews = (itineraries, userId) => {
-  let totalCommentsCount = 0;
-  let totalReviewsCount = 0;
-  console.log(itineraries);
-  // Recorremos todos los itinerarios del usuario
-// Primero verificamos que tenemos los datos
-if (!itineraries?.data || !Array.isArray(itineraries.data)) {
-  console.error('No valid itineraries data:', itineraries);
-  return { totalCommentsCount: 0, totalReviewsCount: 0 };
-}
 
-// Iteramos sobre itineraries.data
-itineraries.data.forEach((itinerary) => {
-  // Verificamos que tenemos acceso a los arrays
-  const comments = Array.isArray(itinerary.comments) ? itinerary.comments : [];
-  const reviews = Array.isArray(itinerary.reviews) ? itinerary.reviews : [];
+const countCommentsAndReviews = (itineraries) => {
+  if (!Array.isArray(itineraries?.data)) {
+    console.error('Invalid itineraries data:', itineraries);
+    return { totalCommentsCount: 0, totalReviewsCount: 0 }; // Garantizar que nunca sea undefined
+  }
 
-  console.log('Processing itinerary:', itinerary._id);
-  console.log('Full comments:', comments);
-  console.log('Full reviews:', reviews);
-  console.log('Looking for userId:', userId);
+  let totalCommentsCount = 0, totalReviewsCount = 0;
 
-  // Para comentarios
-  const userComments = comments.filter(comment => {
-    if (!comment || !comment.userId) return false;
-    
-    console.log('Comparing comment:', {
-      commentUserId: comment.userId,
-      userId: userId,
-      isMatch: comment.userId === userId
-    });
-    
-    return comment.userId === userId;
+  itineraries.data.forEach(itinerary => {
+    // Contar todos los comentarios sin filtrar por usuario
+    totalCommentsCount += itinerary.comments?.length || 0;
+
+    // Contar todas las reseñas sin filtrar por usuario
+    totalReviewsCount += itinerary.reviews?.length || 0;
   });
 
-  // Para reviews
-  const userReviews = reviews.filter(review => {
-    if (!review || !review.userId) return false;
-    
-    console.log('Comparing review:', {
-      reviewUserId: review.userId,
-      userId: userId,
-      isMatch: review.userId === userId
-    });
-    
-    return review.userId === userId;
-  });
-
-  // Actualizamos los contadores
-  totalCommentsCount += userComments.length;
-  totalReviewsCount += userReviews.length;
-
-  // Log de resultados por itinerario
-  console.log('Results for itinerary', itinerary._id, {
-    commentsFound: userComments.length,
-    reviewsFound: userReviews.length,
-    userComments,
-    userReviews
-  });
-});
-
-console.log('Final counts:', {
-  totalCommentsCount,
-  totalReviewsCount
-});
-
-return { totalCommentsCount, totalReviewsCount };
+  return { totalCommentsCount, totalReviewsCount };
 };
+
 
 // Crear una analítica
 export const createAnalytic = async (analyticData) => {
@@ -231,50 +80,74 @@ export const createAnalytic = async (analyticData) => {
     throw new BadRequestError('Error creating analytic', error);
   }
 };
+
 export const createAnalyticByUserId = async (userId) => {
   try {
+    // Fetch itineraries by user
     const itineraries = await itineraryService.fetchItinerariesByUser(userId);
-    console.log("olaaaaaaaaaaaaaaaaaa", itineraries);
-    if (!itineraries || itineraries.length === 0) {
-      throw new NotFoundError('No itineraries found');
+    console.log("Itineraries fetched:", itineraries);
+
+    // Validación: Verificar si itineraries tiene la propiedad `data` y que sea un array
+    if (!itineraries?.data || !Array.isArray(itineraries.data)) {
+      console.error("Itineraries data is not valid:", itineraries);
+      throw new TypeError('Expected itineraries.data to be an array');
     }
 
-    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(itineraries, userId);
+    // Filtrar itinerarios específicos del usuario
+    const userItineraries = itineraries.data.filter(
+      (itinerary) => itinerary.userId === userId // Comparación directa de strings
+    );
+    console.log("Filtered Itineraries:", userItineraries);
 
-    const avgComments = Math.floor(totalCommentsCount / itineraries.data.length);
-    console.log(avgComments);
-
-    // Calcular averageReviewScore
-    const averageReviewScore = calculateAverageReviewScore(itineraries, userId);
-    console.log("Average Review Score:", averageReviewScore);
-
-    const bestItinerary = getBestItinerary(itineraries, userId);
-    
-    const analyticData = {
-      userId,
-      userItineraryAnalytic: {
-        totalCommentsCount,
-        avgComments,
-        totalReviewsCount,
-        averageReviewScore,
-        bestItineraryByAvgReviewScore: bestItinerary?._id || null,
-      },
-    };
-    console.log("Analytic Data:", analyticData);
-
-    const analyticByUser = await Models.UserAnalytic.findOne({ userId });
-
-    if (!analyticByUser) {
-      return await createAnalytic(analyticData);
-    } else {
-      return await updateAnalytic(analyticByUser._id, analyticData);
+    if (userItineraries.length === 0) {
+      throw new NotFoundError('No itineraries found for the specified user');
     }
+
+    // Crear analítica para cada itinerario
+    const analyticsResults = await Promise.all(
+      userItineraries.map(async (itinerary) => {
+        const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews({ data: [itinerary] });
+
+        // Calcula el promedio de puntuaciones de las reviews
+        const averageReviewScore = calculateAverageReviewScore({ data: [itinerary] });
+        const avgComments = totalCommentsCount/userItineraries.length;
+        // Validar mejor itinerario basado en promedio de puntuaciones
+        const bestItineraryByAvgReviewScore = getBestItinerary({ data: [itinerary] });
+
+        const analyticData = {
+          userId,
+          resourceId: itinerary._id, // `_id` es un string
+          userItineraryAnalytic: {
+            totalCommentsCount,
+            avgComments,
+            totalReviewsCount,
+            averageReviewScore: isNaN(averageReviewScore) ? 0 : averageReviewScore,
+            bestItineraryByAvgReviewScore: bestItineraryByAvgReviewScore || null,
+          },
+        };
+
+        console.log("Analytic Data for Itinerary:", analyticData);
+
+        // Verifica si ya existe un análisis para este itinerario
+        const existingAnalytic = await Models.UserAnalytic.findOne({ resourceId: itinerary._id });
+
+        if (!existingAnalytic) {
+          // Crear nuevo análisis si no existe
+          return await createAnalytic(analyticData);
+        } else {
+          // Actualizar análisis existente si ya existe
+          return await updateAnalytic(existingAnalytic._id, analyticData);
+        }
+      })
+    );
+
+    return analyticsResults;
   } catch (error) {
-    console.error("Error in createAnalyticByUserId:", error);
-    if (error instanceof NotFoundError) {
-      throw error;
-    }
-    throw new BadRequestError('Error fetching or updating analytic by userId', error);
+    console.error('Error in createAnalyticByUserId:', {
+      message: error.message,
+      stack: error.stack,
+    });
+    throw new BadRequestError('Error fetching or updating analytics for user itineraries');
   }
 };
 
@@ -353,7 +226,6 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
     throw new BadRequestError('Error fetching or creating analytic', error);
   }
 };
-
 
 // Guardar o actualizar analítica
 export const saveAnalytic = async (id, analyticData) => {

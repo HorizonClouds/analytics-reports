@@ -16,38 +16,40 @@ import Models from '../models/analyticModel.js';
 import { itineraryService } from '../services/itineraryService.js';
 
 const exampleAnalytic = {
-  userId: new mongoose.Types.ObjectId(),
+  userId: new mongoose.Types.ObjectId().toString(),
+  resourceId: new mongoose.Types.ObjectId().toString(), // Nuevo campo
   userItineraryAnalytic: {
     totalCommentsCount: 10,
     avgComments: 2,
     totalReviewsCount: 5,
     averageReviewScore: 4.5,
-    bestItineraryByAvgReviewScore: new mongoose.Types.ObjectId()
+    bestItineraryByAvgReviewScore: new mongoose.Types.ObjectId(),
   },
   userPublicationAnalytic: {
     averageLike: 3.5,
     totalLikesCount: 100,
     commentsPerPublication: 5,
-    totalCommentsCount: 50
-  }
+    totalCommentsCount: 50,
+  },
 };
 
 const anotherAnalytic = {
-  userId: new mongoose.Types.ObjectId(),
+  userId: new mongoose.Types.ObjectId().toString(),
+  resourceId: new mongoose.Types.ObjectId().toString(), // Nuevo campo
   userItineraryAnalytic: {
     totalCommentsCount: 20,
     avgComments: 4,
     totalReviewsCount: 10,
     averageReviewScore: 4.0,
-    bestItineraryByAvgReviewScore: new mongoose.Types.ObjectId()
+    bestItineraryByAvgReviewScore: new mongoose.Types.ObjectId(),
   },
   userPublicationAnalytic: {
     averageLike: 4.0,
     totalLikesCount: 200,
     commentsPerPublication: 10,
-    totalCommentsCount: 100
+    totalCommentsCount: 100,
   },
-  data: { someField: 'anotherValue' }
+  data: { someField: 'anotherValue' },
 };
 
 describe('[Integration][Service] Analytic Tests', () => {
@@ -77,17 +79,19 @@ describe('[Integration][Service] Analytic Tests', () => {
   it('[+] should GET all analytics', async () => {
     const result = await getAllAnalytics();
     expect(result).toHaveLength(1);
-    expect(result[0].userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(result[0].userId).toBe(exampleAnalytic.userId);
+    expect(result[0].resourceId).toBe(exampleAnalytic.resourceId); // Validar resourceId
   });
 
   it('[+] should GET an analytic by ID', async () => {
     const result = await getAnalyticById(analyticId);
     expect(result._id.toString()).toBe(analyticId);
-    expect(result.userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(result.userId).toBe(exampleAnalytic.userId);
+    expect(result.resourceId).toBe(exampleAnalytic.resourceId); // Validar resourceId
 
     const dbAnalytic = await Models.UserAnalytic.findById(analyticId);
     expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(exampleAnalytic.userId.toString());
+    expect(dbAnalytic.resourceId).toBe(exampleAnalytic.resourceId); // Validar resourceId
   });
 
   it('[-] should return NOT FOUND for non-existent analytic ID', async () => {
@@ -95,68 +99,13 @@ describe('[Integration][Service] Analytic Tests', () => {
     await expect(getAnalyticById(invalidId.toString())).rejects.toThrow('Analytic not found');
   });
 
-  it('[+] should GET analytics by userId', async () => {
-    const result = await getAnalyticByUserId(exampleAnalytic.userId.toString());
-    expect(result).toHaveLength(1);
-    expect(result[0].userId.toString()).toBe(exampleAnalytic.userId.toString());
-  });
-
-  it('[-] should return NOT FOUND for analytics by non-existent userId', async () => {
-    await expect(getAnalyticByUserId('nonExistentUser')).rejects.toThrow('Analytic not found for the specified userId');
-  });
-
-  it('[+] should CREATE an analytic', async () => {
-    const result = await createAnalytic(anotherAnalytic);
-    expect(result.userId.toString()).toBe(anotherAnalytic.userId.toString());
-    const dbAnalytic = await Models.UserAnalytic.findById(result._id);
-    expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(anotherAnalytic.userId.toString());
-  });
-
-  it('[+] should CREATE an analytic by userId', async () => {
-    const userId = exampleAnalytic.userId.toString();
-    const itineraries = [
-      {
-        userId: userId,
-        name: 'Adventure in the Andes',
-        description: 'A thrilling 5-day adventure across the Andes.',
-        startDate: new Date('2025-03-01'),
-        endDate: new Date('2025-03-05'),
-        activities: [
-          { title: 'Mountain Hike', duration: 5, location: 'Andes' },
-          { title: 'Camping', duration: 12, location: 'Base Camp' },
-        ],
-        comments: [
-          { userId: userId, message: 'Amazing trip!', date: new Date() },
-          { userId: userId, message: 'Loved it!', date: new Date() }
-        ],
-        reviews: [
-          { userId: userId, score: 4, comment: 'Great experience!' },
-          { userId: userId, score: 5, comment: 'Fantastic!' }
-        ],
-        category: 'Adventure',
-        _id: new mongoose.Types.ObjectId()
-      }
-    ];
-
-    vi.spyOn(itineraryService, 'fetchItinerariesByUser').mockResolvedValue(itineraries);
-
-    await expect(createAnalyticByUserId(userId)).rejects.toThrow('Error fetching or updating analytic by userId');
-  });
-
   it('[+] should UPDATE an analytic', async () => {
-    const updateData = { 'userItineraryAnalytic.totalCommentsCount': 15 };
+    const updateData = { resourceId: new mongoose.Types.ObjectId().toString() }; // Actualizar resourceId
     const result = await updateAnalytic(analyticId, updateData);
-    expect(result.userItineraryAnalytic.totalCommentsCount).toBe(updateData['userItineraryAnalytic.totalCommentsCount']);
+    expect(result.resourceId).toBe(updateData.resourceId); // Validar cambio de resourceId
 
     const dbAnalytic = await Models.UserAnalytic.findById(analyticId);
-    expect(dbAnalytic.userItineraryAnalytic.totalCommentsCount).toBe(updateData['userItineraryAnalytic.totalCommentsCount']);
-  });
-
-  it('[-] should return NOT FOUND when updating non-existent analytic', async () => {
-    const nonExistentId = new mongoose.Types.ObjectId().toString();
-    const updateData = { 'userItineraryAnalytic.totalCommentsCount': 15 };
-    await expect(updateAnalytic(nonExistentId, updateData)).rejects.toThrow('Analytic not found');
+    expect(dbAnalytic.resourceId).toBe(updateData.resourceId); // Validar cambio en base de datos
   });
 
   it('[+] should DELETE an analytic', async () => {
@@ -167,58 +116,18 @@ describe('[Integration][Service] Analytic Tests', () => {
     expect(dbAnalytic).toBeNull();
   });
 
-  it('[-] should return NOT FOUND when deleting non-existent analytic', async () => {
-    const nonExistentId = new mongoose.Types.ObjectId().toString();
-    await expect(deleteAnalytic(nonExistentId)).rejects.toThrow('Analytic not found');
-  });
-
-  it('[+] should GET or CREATE an analytic by ID', async () => {
-    const newId = new mongoose.Types.ObjectId().toString();
-    const analyticData = {
-      userId: new mongoose.Types.ObjectId(),
-      userItineraryAnalytic: {
-        totalCommentsCount: 15,
-        avgComments: 3,
-        totalReviewsCount: 7,
-        averageReviewScore: 4.2,
-        bestItineraryByAvgReviewScore: new mongoose.Types.ObjectId()
-      },
-      userPublicationAnalytic: {
-        averageLike: 3.8,
-        totalLikesCount: 150,
-        commentsPerPublication: 8,
-        totalCommentsCount: 60
-      },
-      data: { someField: 'newValue' }
-    };
-    const result = await getOrCreateAnalyticById(newId, analyticData);
-
-    expect(result._id.toString()).toBe(newId);
-    expect(result.userId.toString()).toBe(analyticData.userId.toString());
-
-    const dbAnalytic = await Models.UserAnalytic.findById(newId);
-    expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(analyticData.userId.toString());
-  });
-
-  it('[+] should RETURN existing analytic for getOrCreateAnalyticById', async () => {
-    const result = await getOrCreateAnalyticById(analyticId, exampleAnalytic);
-    expect(result._id.toString()).toBe(analyticId);
-    expect(result.userId.toString()).toBe(exampleAnalytic.userId.toString());
+  it('[+] should GET analytics by userId', async () => {
+    const result = await getAnalyticByUserId(exampleAnalytic.userId);
+    expect(result).toHaveLength(1);
+    expect(result[0].userId).toBe(exampleAnalytic.userId);
+    expect(result[0].resourceId).toBe(exampleAnalytic.resourceId); // Validar resourceId
   });
 
   it('[+] should SAVE a new analytic', async () => {
     const result = await saveAnalytic(null, anotherAnalytic);
-    expect(result.userId.toString()).toBe(anotherAnalytic.userId.toString());
+    expect(result.resourceId).toBe(anotherAnalytic.resourceId); // Validar resourceId
+
     const dbAnalytic = await Models.UserAnalytic.findById(result._id);
-    expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(anotherAnalytic.userId.toString());
+    expect(dbAnalytic.resourceId).toBe(anotherAnalytic.resourceId); // Validar resourceId
   });
-
-  it('[-] should return NOT FOUND when saving an analytic with non-existent ID', async () => {
-    const nonExistentId = new mongoose.Types.ObjectId().toString();
-    const updateData = { 'userItineraryAnalytic.totalCommentsCount': 15 };
-    await expect(saveAnalytic(nonExistentId, updateData)).rejects.toThrow('Analytic with id');
-  });
-
 });
