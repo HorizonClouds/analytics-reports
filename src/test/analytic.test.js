@@ -102,7 +102,7 @@ describe('[Integration][Service] Analytic Tests', () => {
   });
 
   it('[-] should return NOT FOUND for analytics by non-existent userId', async () => {
-    await expect(getAnalyticByUserId('nonExistentUser')).rejects.toThrow('Error fetching analytic by userId');
+    await expect(getAnalyticByUserId('nonExistentUser')).rejects.toThrow('Analytic not found for the specified userId');
   });
 
   it('[+] should CREATE an analytic', async () => {
