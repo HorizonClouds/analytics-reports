@@ -8,10 +8,12 @@ export const itineraryService = {
     fetchItinerariesByUser: async (userId) => {
         try {
             const itinerariesServiceUrl = await getServiceUrl('itineraries');
+            console.log("PRUEBA itinerariesServiceUrl", itinerariesServiceUrl);
             if (!itinerariesServiceUrl) {
                 logger.error('Cannot retrieve forecast data: Itineraries service URL not found.');
                 return null;
             }
+            console.log();
             const token = jwt.sign({ serviceId: 'analytics-reports-service', message: "Hello From analytics reports Service" }, config.jwtSecret, {});
             // Obtener los itinerarios desde el microservicio
             const response = await axios.get(`${itinerariesServiceUrl}/api/v1/itineraries`, {
