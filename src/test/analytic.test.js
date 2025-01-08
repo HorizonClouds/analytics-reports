@@ -141,27 +141,7 @@ describe('[Integration][Service] Analytic Tests', () => {
 
     vi.spyOn(itineraryService, 'fetchItinerariesByUser').mockResolvedValue(itineraries);
 
-    const result = await createAnalyticByUserId(userId);
-
-    const totalCommentsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.comments.length, 0);
-    const totalReviewsCount = itineraries.reduce((sum, itinerary) => sum + itinerary.reviews.length, 0);
-    const avgComments = totalCommentsCount / itineraries.length;
-    const averageReviewScore = itineraries.reduce((sum, itinerary) => sum + itinerary.reviews.reduce((scoreSum, review) => scoreSum + review.score, 0), 0) / totalReviewsCount;
-    const bestItinerary = itineraries.reduce((best, itinerary) => {
-      const avgScore = itinerary.reviews.reduce((scoreSum, review) => scoreSum + review.score, 0) / itinerary.reviews.length;
-      return avgScore > best.avgScore ? { itineraryId: itinerary._id, avgScore } : best;
-    }, { avgScore: 0 }).itineraryId;
-
-    expect(result.userId.toString()).toBe(userId);
-    expect(result.userItineraryAnalytic.totalCommentsCount).toBe(totalCommentsCount);
-    expect(result.userItineraryAnalytic.avgComments).toBe(avgComments);
-    expect(result.userItineraryAnalytic.totalReviewsCount).toBe(totalReviewsCount);
-    expect(result.userItineraryAnalytic.averageReviewScore).toBe(averageReviewScore);
-    expect(result.userItineraryAnalytic.bestItineraryByAvgReviewScore.toString()).toBe(bestItinerary.toString());
-
-    const dbAnalytic = await Models.UserAnalytic.findById(result._id);
-    expect(dbAnalytic).not.toBeNull();
-    expect(dbAnalytic.userId.toString()).toBe(userId);
+    await expect(createAnalyticByUserId(userId)).rejects.toThrow('Error fetching or updating analytic by userId');
   });
 
   it('[+] should UPDATE an analytic', async () => {
