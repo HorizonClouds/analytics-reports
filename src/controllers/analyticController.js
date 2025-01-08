@@ -71,7 +71,7 @@ export const saveAnalytic = async (req, res, next) => {
 
 export const createAnalyticByUserId = async (req, res, next) => {
   try {
-    const userId = req.user?.userId || req.params?.userId;
+    const userId  = req.params?.userId;
     const analyticByUser = await analyticService.createAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
     res.sendSuccess(analyticByUser); // Devuelve la analítica encontrada
   } catch (error) {
@@ -81,7 +81,9 @@ export const createAnalyticByUserId = async (req, res, next) => {
 
 export const getAnalyticByUserId = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
+    console.log("OAL");
+    console.log(JSON.stringify(req.params.userId, null, 2));
+    const  userId  = req.params.userId;
     const analyticByUser = await analyticService.getAnalyticByUserId(userId); // Llama al servicio para buscar la analítica
     res.sendSuccess(analyticByUser); // Devuelve la analítica encontrada
   } catch (error) {

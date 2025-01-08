@@ -16,57 +16,207 @@ const calculateAverageScoreForItinerary = (itinerary, userId) => {
 };
 
 const getBestItinerary = (itineraries, userId) => {
+  console.log('Getting best itinerary for userId:', userId);
+
+  // Verificar que tenemos datos válidos
+  if (!itineraries?.data || !Array.isArray(itineraries.data)) {
+    console.error('No valid itineraries data:', itineraries);
+    return null;
+  }
+
+  // Función helper para calcular el score promedio de un itinerario
+  const calculateAverageScoreForItinerary = (itinerary, userId) => {
+    if (!itinerary.reviews || !Array.isArray(itinerary.reviews)) {
+      console.log('No reviews found for itinerary:', itinerary._id);
+      return 0;
+    }
+
+    const userReviews = itinerary.reviews.filter(review => {
+      if (!review || !review.userId) return false;
+      return review.userId === userId;
+    });
+
+    console.log('User reviews for itinerary', itinerary._id, ':', userReviews.length);
+
+    if (userReviews.length === 0) return 0;
+
+    const totalScore = userReviews.reduce((sum, review) => {
+      const score = Number(review.score) || 0;
+      console.log('Adding score:', score);
+      return sum + score;
+    }, 0);
+
+    const averageScore = totalScore / userReviews.length;
+    console.log('Average score for itinerary', itinerary._id, ':', averageScore);
+
+    return averageScore;
+  };
+
   // Calcular la puntuación promedio para cada itinerario
-  const itinerariesWithScores = itineraries.map(itinerary => ({
-    itinerary,
-    averageScore: calculateAverageScoreForItinerary(itinerary, userId) || 0, // Asignar 0 si no hay puntuación válida
-  }));
+  const itinerariesWithScores = itineraries.data.map(itinerary => {
+    const averageScore = calculateAverageScoreForItinerary(itinerary, userId);
+    console.log('Calculated score for itinerary:', {
+      itineraryId: itinerary._id,
+      averageScore
+    });
+
+    return {
+      itinerary,
+      averageScore: averageScore || 0 // Asignar 0 si no hay puntuación válida
+    };
+  });
+
+  console.log('All itineraries with scores:', 
+    itinerariesWithScores.map(({ itinerary, averageScore }) => ({
+      id: itinerary._id,
+      score: averageScore
+    }))
+  );
 
   // Ordenar los itinerarios por la puntuación promedio en orden descendente
   const sortedItineraries = itinerariesWithScores.sort((a, b) => b.averageScore - a.averageScore);
 
+  console.log('Sorted itineraries:', 
+    sortedItineraries.map(({ itinerary, averageScore }) => ({
+      id: itinerary._id,
+      score: averageScore
+    }))
+  );
+
   // El primer itinerario es el mejor (con la mayor puntuación promedio)
-  return sortedItineraries[0]?.itinerary || null; // Retornar null si no hay itinerarios válidos
+  const bestItinerary = sortedItineraries[0]?.itinerary || null;
+
+  console.log('Best itinerary found:', bestItinerary ? {
+    id: bestItinerary._id,
+    score: sortedItineraries[0].averageScore
+  } : 'No valid itinerary found');
+
+  return bestItinerary;
 };
 
 const calculateAverageReviewScore = (itineraries, userId) => {
   let totalScore = 0;
   let totalReviews = 0;
 
+  // Verificar que tenemos datos válidos
+  if (!itineraries?.data || !Array.isArray(itineraries.data)) {
+    console.error('No valid itineraries data:', itineraries);
+    return 0;
+  }
+
+  console.log('Calculating average review score for userId:', userId);
+
   // Recorremos todos los itinerarios
-  itineraries.forEach(itinerary => {
+  itineraries.data.forEach(itinerary => {
+    // Verificar que tenemos un array de reviews
+    const reviews = Array.isArray(itinerary.reviews) ? itinerary.reviews : [];
+    
+    console.log('Processing itinerary:', itinerary._id);
+    console.log('Reviews available:', reviews.length);
+
     // Filtramos las reseñas de este itinerario por el userId
-    const userReviews = itinerary.reviews.filter(review => review.userId === userId);
+    const userReviews = reviews.filter(review => {
+      if (!review || !review.userId) return false;
+
+      console.log('Comparing review:', {
+        reviewUserId: review.userId,
+        userId: userId,
+        score: review.score,
+        isMatch: review.userId === userId
+      });
+
+      return review.userId === userId;
+    });
+
+    console.log('User reviews found:', userReviews.length);
 
     // Sumamos las puntuaciones de las reseñas del usuario
     userReviews.forEach(review => {
-      totalScore += review.score || 0;
-      totalReviews += 1; // Contamos cuántas reseñas tiene este usuario
+      const score = Number(review.score) || 0;
+      console.log('Adding score:', score);
+      totalScore += score;
+      totalReviews += 1;
     });
   });
 
   // Calculamos el promedio de la puntuación de las reseñas
   const averageReviewScore = totalReviews > 0 ? totalScore / totalReviews : 0;
 
+  console.log('Final calculation:', {
+    totalScore,
+    totalReviews,
+    averageReviewScore
+  });
+
   return averageReviewScore;
 };
-
 const countCommentsAndReviews = (itineraries, userId) => {
   let totalCommentsCount = 0;
   let totalReviewsCount = 0;
-
+  console.log(itineraries);
   // Recorremos todos los itinerarios del usuario
-  itineraries.forEach((itinerary) => {
-    // Filtrar los comentarios del itinerario por el userId
-    const userComments = itinerary.comments.filter(comment => comment.userId.toString() === userId.toString());
-    totalCommentsCount += userComments.length; // Sumar los comentarios de este itinerario
+// Primero verificamos que tenemos los datos
+if (!itineraries?.data || !Array.isArray(itineraries.data)) {
+  console.error('No valid itineraries data:', itineraries);
+  return { totalCommentsCount: 0, totalReviewsCount: 0 };
+}
 
-    // Filtrar las reseñas del itinerario por el userId
-    const userReviews = itinerary.reviews.filter(review => review.userId.toString() === userId.toString());
-    totalReviewsCount += userReviews.length; // Sumar las reseñas de este itinerario
+// Iteramos sobre itineraries.data
+itineraries.data.forEach((itinerary) => {
+  // Verificamos que tenemos acceso a los arrays
+  const comments = Array.isArray(itinerary.comments) ? itinerary.comments : [];
+  const reviews = Array.isArray(itinerary.reviews) ? itinerary.reviews : [];
+
+  console.log('Processing itinerary:', itinerary._id);
+  console.log('Full comments:', comments);
+  console.log('Full reviews:', reviews);
+  console.log('Looking for userId:', userId);
+
+  // Para comentarios
+  const userComments = comments.filter(comment => {
+    if (!comment || !comment.userId) return false;
+    
+    console.log('Comparing comment:', {
+      commentUserId: comment.userId,
+      userId: userId,
+      isMatch: comment.userId === userId
+    });
+    
+    return comment.userId === userId;
   });
 
-  return { totalCommentsCount, totalReviewsCount };
+  // Para reviews
+  const userReviews = reviews.filter(review => {
+    if (!review || !review.userId) return false;
+    
+    console.log('Comparing review:', {
+      reviewUserId: review.userId,
+      userId: userId,
+      isMatch: review.userId === userId
+    });
+    
+    return review.userId === userId;
+  });
+
+  // Actualizamos los contadores
+  totalCommentsCount += userComments.length;
+  totalReviewsCount += userReviews.length;
+
+  // Log de resultados por itinerario
+  console.log('Results for itinerary', itinerary._id, {
+    commentsFound: userComments.length,
+    reviewsFound: userReviews.length,
+    userComments,
+    userReviews
+  });
+});
+
+console.log('Final counts:', {
+  totalCommentsCount,
+  totalReviewsCount
+});
+
+return { totalCommentsCount, totalReviewsCount };
 };
 
 // Crear una analítica
@@ -84,19 +234,22 @@ export const createAnalytic = async (analyticData) => {
 export const createAnalyticByUserId = async (userId) => {
   try {
     const itineraries = await itineraryService.fetchItinerariesByUser(userId);
-
+    console.log("olaaaaaaaaaaaaaaaaaa", itineraries);
     if (!itineraries || itineraries.length === 0) {
       throw new NotFoundError('No itineraries found');
     }
 
-    const userItineraries = itineraries.filter(itinerary => itinerary.userId.toString() === userId);
+    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(itineraries, userId);
 
-    const { totalCommentsCount, totalReviewsCount } = countCommentsAndReviews(userItineraries, userId);
+    const avgComments = Math.floor(totalCommentsCount / itineraries.data.length);
+    console.log(avgComments);
 
-    const avgComments = totalCommentsCount / userItineraries.length;
-    const averageReviewScore = calculateAverageReviewScore(userItineraries, userId);
-    const bestItinerary = getBestItinerary(userItineraries, userId);
+    // Calcular averageReviewScore
+    const averageReviewScore = calculateAverageReviewScore(itineraries, userId);
+    console.log("Average Review Score:", averageReviewScore);
 
+    const bestItinerary = getBestItinerary(itineraries, userId);
+    
     const analyticData = {
       userId,
       userItineraryAnalytic: {
@@ -107,6 +260,7 @@ export const createAnalyticByUserId = async (userId) => {
         bestItineraryByAvgReviewScore: bestItinerary?._id || null,
       },
     };
+    console.log("Analytic Data:", analyticData);
 
     const analyticByUser = await Models.UserAnalytic.findOne({ userId });
 
@@ -116,6 +270,7 @@ export const createAnalyticByUserId = async (userId) => {
       return await updateAnalytic(analyticByUser._id, analyticData);
     }
   } catch (error) {
+    console.error("Error in createAnalyticByUserId:", error);
     if (error instanceof NotFoundError) {
       throw error;
     }
@@ -149,7 +304,9 @@ export const getAnalyticById = async (id) => {
 };
 export const getAnalyticByUserId = async (userId) => {
   try {
+    console.log("algo:", userId);
     const analyticByUser = await Models.UserAnalytic.find({ userId }); // Busca por userId
+    console.log(analyticByUser);
     if (analyticByUser.length === 0) {
       throw new NotFoundError('Analytic not found for the specified userId');
     }
@@ -164,30 +321,28 @@ export const getAnalyticByUserId = async (userId) => {
 
 export const getOrCreateAnalyticById = async (id, analyticData) => {
   try {
-    logger.info('ID recibido:', id); // Imprime el id recibido para depuración
+    logger.info('ID recibido:', id);
 
-    // Verifica si el id es un ObjectId válido
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-      // Si el id no es válido, genera uno nuevo
+    // Verify if id is a non-empty string
+    if (!id || typeof id !== 'string' || id.trim().length === 0) {
       logger.info('ID no válido o no proporcionado, generando uno nuevo');
-      id = new mongoose.Types.ObjectId();
+      id = Date.now().toString(); // Generate a timestamp-based ID
     }
 
-    // Busca el análisis en la base de datos por id
+    // Search for the analysis in the database by id
     let analytic = await Models.UserAnalytic.findById(id);
 
-    // Si ya existe, lo retornamos
+    // If it exists, return it
     if (analytic) {
       return analytic;
     }
 
-    // Si no existe, creamos un nuevo análisis
+    // If it doesn't exist, create a new analysis
     const newAnalytic = new Models.UserAnalytic({
-      _id: id, // Usa el ID proporcionado o generado para el nuevo análisis
-      ...analyticData, // Usa los datos adicionales que se pasan
+      _id: id,
+      ...analyticData,
     });
 
-    // Guarda el nuevo análisis en la base de datos
     analytic = await newAnalytic.save();
     return analytic;
   } catch (error) {
@@ -203,17 +358,16 @@ export const getOrCreateAnalyticById = async (id, analyticData) => {
 // Guardar o actualizar analítica
 export const saveAnalytic = async (id, analyticData) => {
   try {
-    if (id && mongoose.Types.ObjectId.isValid(id)) {
-      // Si el `id` es válido, intentamos buscar la analítica existente
+    if (id && typeof id === 'string' && id.trim().length > 0) {
+      // If the id is valid, try to find the existing analytic
       const existingAnalytic = await Models.UserAnalytic.findById(id);
 
       if (existingAnalytic) {
-        // Comprobar si ha pasado más de un día desde la última actualización
+        // Check if more than one day has passed since the last update
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
         if (existingAnalytic.analysisDate < oneDayAgo) {
-
           return await updateAnalytic(id, analyticData);
         } else {
           logger.info('No se actualizó la analítica porque no ha pasado suficiente tiempo');
@@ -223,14 +377,14 @@ export const saveAnalytic = async (id, analyticData) => {
         throw new Error(`Analytic with id ${id} not found`);
       }
     } else {
-      // Si no hay un `id` válido, creamos una nueva analítica
+      // If there's no valid id, create a new analytic
       const newAnalytic = await createAnalytic(analyticData);
       logger.info('Nueva analítica creada');
       return newAnalytic;
     }
   } catch (error) {
     console.error('Error saving or updating analytic:', error);
-    throw error; // Lanza el error para ser manejado por el controlador
+    throw error;
   }
 };
 
@@ -252,7 +406,6 @@ export const updateAnalytic = async (id, updateData) => {
     throw new BadRequestError('Error updating analytic', error);
   }
 };
-
 
 export const deleteAnalytic = async (id) => {
   try {

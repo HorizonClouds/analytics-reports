@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const reportSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Referencia al usuario que realiza el reporte
+    userId: { type: String, ref: 'User', required: true }, // Referencia al usuario que realiza el reporte
     //añadir identificador de itinerario y publicacion
     type: { 
       type: String, 
@@ -9,7 +9,7 @@ const reportSchema = new mongoose.Schema({
       required: true 
     },
     resourceId: { 
-      type: mongoose.Schema.Types.ObjectId, 
+      type: String, 
       required: true,  // Siempre es necesario
       refPath: 'type', // Aquí indicamos que la referencia dependerá del campo `type`
     },
